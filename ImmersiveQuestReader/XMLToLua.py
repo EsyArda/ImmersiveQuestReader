@@ -1,36 +1,3 @@
-""" 
-# Function to convert XML element to Lua table
-def xml_to_lua(element):
-    lua_table = "{\n"
-    print(type(element.tag))
-    for child in element:
-        # lua_table += "\t" + child.tag + " = {"
-        lua_table += "\t{"
-        for attribute in child.attrib:
-            lua_table += attribute + " = '" + child.attrib[attribute] + "', "
-        pass
-        lua_table += "},\n"
-    lua_table += "}\n"
-    return lua_table
-
-
-# Load the XML file
-tree = ET.parse('ImmersiveQuestReader\Quests.xml')
-root = tree.getroot()
-
-# Convert XML to Lua table
-lua_table  = "QUESTS = "
-lua_table += xml_to_lua(root)
-print(lua_table)
-# Write Lua table to file
-with open('ImmersiveQuestReader\Test.lua', 'w') as file:
-    file.write(lua_table)
-
- """
-
-
-
-
 import xml.etree.ElementTree as ET
 
 # Function to convert XML element to Lua table
@@ -38,15 +5,18 @@ def xml_to_dict(element):
     dictionary = {}
     for child in element:
         if child.tag in dictionary:
+            # If the item is already in the dictionary, it must be a list
             if type(dictionary[child.tag]) is list:
+                # Append the new item to the list
                 dictionary[child.tag].append(xml_to_dict(child))
             else:
+                # Create the list if it doesn't exist
                 dictionary[child.tag] = [dictionary[child.tag], xml_to_dict(child)]
         else:
             dictionary[child.tag] = xml_to_dict(child)
 
     if len(element.attrib) > 0:
-        # dictionary["attributes"] = element.attrib
+        # Add attributes to the dictionary
         for attribute in element.attrib:
             dictionary[attribute] = element.attrib[attribute]
 
