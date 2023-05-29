@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Plugin>
+    <Information>
+        <Name>ImmersiveQuestReader</Name>
+        <Author>Esy</Author>
+        <Version>0.1.0</Version>
+        <Description>Read quests</Description>
+    </Information>
+    <Package>EsyIQR.ImmersiveQuestReader.Main</Package>
+</Plugin>
