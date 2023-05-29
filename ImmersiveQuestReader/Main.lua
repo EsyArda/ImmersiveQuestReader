@@ -18,10 +18,10 @@ end
 
 
 function PrintTextFromQuestName(questName)
-    local quest = QuestTextByName(QUESTS, questName)
+    local quest = QuestTextByName(QUESTS.quest, questName)
 
     if quest then 
-        local text = quest.bestowers[1].text
+        local text = quest.bestower[1].text
         Turbine.Shell.WriteLine("IQR> Quest text: " .. text);
     else
         Turbine.Shell.WriteLine("IQR> La quête '" .. questName .. "' n'a pas été trouvée.")
