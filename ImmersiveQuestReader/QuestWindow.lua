@@ -64,6 +64,7 @@ function QuestWindow:Constructor()
         if self.currentLine < #self.questLines then
             self.currentLine = self.currentLine + 1;
             self:SetQuestText(self.questLines[self.currentLine]);
+            self:UpdateFooterText();
         else
             self.questLines = {};
             self.currentLine = 1;
@@ -83,8 +84,8 @@ function QuestWindow:Constructor()
 
 end
 
-function QuestWindow:SetWindowTitle(questName, level)
-    self:SetText(level .. "-" .. questName);
+function QuestWindow:UpdateWindowTitle()
+    self:SetText(self.quest.level .. " - " .. self.quest.name);
 end
 
 function QuestWindow:SetQuestText(questText)
@@ -94,7 +95,7 @@ end
 function QuestWindow:ShowQuest(quest, state)
     self.quest = quest;
     self:SetVisible(true);
-    self:SetWindowTitle(quest.name, quest.level);
+    self:UpdateWindowTitle();
     
     local questText = "";
     if state ~= nil and state == "completed" then
@@ -119,6 +120,7 @@ function QuestWindow:ShowQuest(quest, state)
     end
 
     self:SetQuestText(self.questLines[1]);
+    self:UpdateFooterText();
 end
 
 
@@ -126,4 +128,9 @@ function QuestWindow:ComputeQuestText(questText)
     local questTextComputed = string.gsub(questText, "${PLAYER}", self.player:GetName());
     questTextComputed = string.gsub(questTextComputed, "${RACE}", self.player:GetRace()); --outputs a number :c
     return questTextComputed;
+end
+
+
+function QuestWindow:UpdateFooterText()
+    self.pageNumber:SetText(self.quest.name .. " - " .. self.currentLine .. "/" .. #self.questLines);
 end
