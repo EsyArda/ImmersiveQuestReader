@@ -1,0 +1,1 @@
+-- Manages quests accepted, advanced and finished by the player
