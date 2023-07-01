@@ -29,6 +29,7 @@ function QuestWindow:Constructor()
     self.questTextLabel:SetSize(windowWidth - 40, windowHeight - 80);
     self.questTextLabel:SetPosition(20, 40);
     self.questTextLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
+    self.questTextLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
     self.questTextLabel:SetText("Quest text");
     self.questTextLabel:SetVisible(true);
     
@@ -77,8 +78,12 @@ function QuestWindow:NewQuest(quest)
     questText = self:ComputeQuestText(questText);
 
     -- Split the text in a table of lines
-    for line in string.gmatch(questText, "[^\n]+") do -- Match all characters except new line
-        table.insert(self.questLines, line);
+    for line in string.gmatch(questText, "[^ '\n][^.!?\n]+[.!?]*") do
+        -- [^\n]+ Matches everything except new line 
+        -- [^ '\n][^.!?\n]+[.!?]* Does not start with a space or a quote then match any character except .!? and new line one or more times then match .!? zero or more times to include them at the end of the line.
+        if line ~= "" then
+            table.insert(self.questLines, line);
+        end
     end
 
     self:SetQuestText(self.questLines[1]);
