@@ -54,20 +54,20 @@ function QuestWindow:Constructor()
     -- Current quest displayed
     self.quest = nil;
     -- Table of lines of the quest text
-    self.questLines = {};
+    self.questPages = {};
     -- Current index in the table of lines
-    self.currentLine = 1;
+    self.currentPage = 1;
     
     
     -- Can click on the text
     self.titleLabel.MouseUp = function(sender, args)
-        if self.currentLine < #self.questLines then
-            self.currentLine = self.currentLine + 1;
-            self:SetQuestText(self.questLines[self.currentLine]);
+        if self.currentPage < #self.questPages then
+            self.currentPage = self.currentPage + 1;
+            self:SetQuestText(self.questPages[self.currentPage]);
             self:UpdateFooterText();
         else
-            self.questLines = {};
-            self.currentLine = 1;
+            self.questPages = {};
+            self.currentPage = 1;
             self:SetVisible(false);
         end    
     end
@@ -115,11 +115,11 @@ function QuestWindow:ShowQuest(quest, state)
         -- [^\n]+ Matches everything except new line 
         -- [^ '\n][^.!?\n]+[.!?]* Does not start with a space or a quote then match any character except .!? and new line one or more times then match .!? zero or more times to include them at the end of the line.
         if line ~= "" then
-            table.insert(self.questLines, line);
+            table.insert(self.questPages, line);
         end
     end
 
-    self:SetQuestText(self.questLines[1]);
+    self:SetQuestText(self.questPages[1]);
     self:UpdateFooterText();
 end
 
@@ -132,5 +132,5 @@ end
 
 
 function QuestWindow:UpdateFooterText()
-    self.pageNumber:SetText(self.quest.name .. " - " .. self.currentLine .. "/" .. #self.questLines);
+    self.pageNumber:SetText(self.quest.name .. " - " .. self.currentPage .. "/" .. #self.questPages);
 end
