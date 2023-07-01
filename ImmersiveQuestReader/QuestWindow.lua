@@ -34,6 +34,26 @@ function QuestWindow:Constructor()
     self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11));
     self.questInfo:SetVisible(true);
 
+    -- Label for the level
+    self.levelLabel = Turbine.UI.Label();
+    self.levelLabel:SetParent(self.questInfo);
+    self.levelLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.levelLabel:SetPosition(0, 0);
+    self.levelLabel:SetBackColor(Turbine.UI.Color(0.74,0.29,0.18,0.11));
+    self.levelLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.levelLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.levelLabel:SetText("Level 0");
+
+    -- Label for the bestower NPC
+    self.npcLabel = Turbine.UI.Label();
+    self.npcLabel:SetParent(self.questInfo);
+    self.npcLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.npcLabel:SetPosition(0, self.levelLabel:GetTop() + self.levelLabel:GetHeight());
+    self.npcLabel:SetBackColor(Turbine.UI.Color(0.74,0.32,0.22,0.56));
+    self.npcLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.npcLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.npcLabel:SetText("From NPC Name");
+
 
     -- Create a label for the text of the quest
     self.questText = "0 - Quest Name"
@@ -121,6 +141,7 @@ function QuestWindow:ShowQuest(quest, state)
 
     self:SetQuestText(self.questPages[1]);
     self:UpdateFooterText();
+    self:UpdateInfo();
 end
 
 
@@ -133,4 +154,9 @@ end
 
 function QuestWindow:UpdateFooterText()
     self.pageNumber:SetText(self.quest.name .. " - " .. self.currentPage .. "/" .. #self.questPages);
+end
+
+function QuestWindow:UpdateInfo()
+    self.levelLabel:SetText("Level " .. self.quest.level);
+    self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
 end
