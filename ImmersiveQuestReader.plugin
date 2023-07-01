@@ -2,7 +2,7 @@
 <Plugin>
     <Information>
         <Name>ImmersiveQuestReader</Name>
-        <Author>Esy</Author>
+        <Author>EsyIQR</Author>
         <Version>0.1.0</Version>
         <Description>An immersive quest reader plugin for LOTRO.</Description>
     </Information>
