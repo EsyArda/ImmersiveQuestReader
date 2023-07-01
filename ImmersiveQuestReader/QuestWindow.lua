@@ -8,8 +8,12 @@ QuestWindow = class(Turbine.UI.Lotro.Window);
 function QuestWindow:Constructor()
     Turbine.UI.Lotro.Window.Constructor(self);
 
-    local windowWidth = 500;
+    local windowWidth = 800;
     local windowHeight = 300;
+    local footerHeight = 20;
+    local xMargin = 20;
+    local yMargin = 20;
+    local topMargin = 40;
 
     self:SetSize(windowWidth, windowHeight);
     
@@ -21,17 +25,26 @@ function QuestWindow:Constructor()
     self:SetText("Quest name");
     self:SetVisible(false); -- Hidden by default
 
+    -- Quest information on the left
+    local questInfoWidth = 200;
+    self.questInfo = Turbine.UI.Control();
+    self.questInfo:SetParent(self);
+    self.questInfo:SetSize(questInfoWidth, windowHeight - topMargin - 2*yMargin - footerHeight);
+    self.questInfo:SetPosition(xMargin, topMargin);
+    self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11));
+    self.questInfo:SetVisible(true);
 
 
     -- Create a label for the text of the quest
+    self.questText = "0 - Quest Name"
     self.questTextLabel = Turbine.UI.Label();
     self.questTextLabel:SetParent(self);
-    self.questTextLabel:SetSize(windowWidth - 40, windowHeight - 80);
-    self.questTextLabel:SetPosition(20, 40);
+    self.questTextLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
+    self.questTextLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
     self.questTextLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
     self.questTextLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
     self.questTextLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29));
-    self.questTextLabel:SetText("Quest text");
+    self.questTextLabel:SetText(self.questText);
     self.questTextLabel:SetVisible(true);
     
 
@@ -67,10 +80,11 @@ function QuestWindow:Constructor()
     self.pageNumber:SetBackColor(Turbine.UI.Color(0.74,0.11,0.29,0.16));
     self.pageNumber:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
     self.pageNumber:SetText("Quest Name - 1/1");
+
 end
 
-function QuestWindow:SetQuestName(questName)
-    self:SetText(questName);
+function QuestWindow:SetQuestName(questName, level)
+    self:SetText(level .. "-" .. questName);
 end
 
 function QuestWindow:SetQuestText(questText)
@@ -80,7 +94,7 @@ end
 function QuestWindow:ShowQuest(quest, state)
     self.quest = quest;
     self:SetVisible(true);
-    self:SetQuestName(quest.name);
+    self:SetQuestName(quest.name, quest.level);
     
     local questText = "";
     if state ~= nil and state == "completed" then
