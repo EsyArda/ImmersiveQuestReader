@@ -37,15 +37,15 @@ function QuestWindow:Constructor()
 
     -- Create a label for the text of the quest
     self.questText = "0 - Quest Name"
-    self.questTextLabel = Turbine.UI.Label();
-    self.questTextLabel:SetParent(self);
-    self.questTextLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
-    self.questTextLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
-    self.questTextLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
-    self.questTextLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
-    self.questTextLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29));
-    self.questTextLabel:SetText(self.questText);
-    self.questTextLabel:SetVisible(true);
+    self.titleLabel = Turbine.UI.Label();
+    self.titleLabel:SetParent(self);
+    self.titleLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
+    self.titleLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
+    self.titleLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
+    self.titleLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29));
+    self.titleLabel:SetText(self.questText);
+    self.titleLabel:SetVisible(true);
     
 
     -- Player (needed for their name)
@@ -60,7 +60,7 @@ function QuestWindow:Constructor()
     
     
     -- Can click on the text
-    self.questTextLabel.MouseUp = function(sender, args)
+    self.titleLabel.MouseUp = function(sender, args)
         if self.currentLine < #self.questLines then
             self.currentLine = self.currentLine + 1;
             self:SetQuestText(self.questLines[self.currentLine]);
@@ -83,18 +83,18 @@ function QuestWindow:Constructor()
 
 end
 
-function QuestWindow:SetQuestName(questName, level)
+function QuestWindow:SetWindowTitle(questName, level)
     self:SetText(level .. "-" .. questName);
 end
 
 function QuestWindow:SetQuestText(questText)
-    self.questTextLabel:SetText(questText);
+    self.titleLabel:SetText(questText);
 end
 
 function QuestWindow:ShowQuest(quest, state)
     self.quest = quest;
     self:SetVisible(true);
-    self:SetQuestName(quest.name, quest.level);
+    self:SetWindowTitle(quest.name, quest.level);
     
     local questText = "";
     if state ~= nil and state == "completed" then
