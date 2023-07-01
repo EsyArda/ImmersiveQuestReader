@@ -10,16 +10,28 @@ end
 
 function QuestManager:IsNewQuest(chatMessage)
     if string.find(chatMessage, "New Quest: ") then
+        Turbine.Shell.WriteLine("IQR.QuestManager> New quest found")
         return true
     else
         return false
     end
 end
 
-function QuestManager:GetNameFromChatMessage(chatMessage)
+function QuestManager:IsCompletedQuest(chatMessage)
+    if string.find(chatMessage, "Completed:") then
+        return true
+    else
+        return false
+    end
+end
+
+function QuestManager:GetNameFromChatMessageNewQuest(chatMessage)
     return string.sub(chatMessage, 12);
 end
 
+function QuestManager:GetNameFromChatMessageCompletedQuest(chatMessage)
+    return string.sub(chatMessage, 12);
+end
 
 -- Returns the quest text for a given quest name
 function QuestManager:GetQuestTextFromName(questName)
