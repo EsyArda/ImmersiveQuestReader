@@ -1,6 +1,6 @@
 -- Quest Manager
 
-import "EsyIQR.ImmersiveQuestReader.QuestDatabase"
+import "EsyIQR.ImmersiveQuestReader.QuestTestDatabase"
 
 QuestManager = class();
 
@@ -25,7 +25,7 @@ end
 function QuestManager:GetQuestTextFromName(questName)
     for _, quest in pairs(self.quests) do
         if quest.name == questName then
-            Turbine.Shell.WriteLine("IQR.Questmanager> Quest found: '" .. quest.name .. "'")
+            Turbine.Shell.WriteLine("IQR.QuestManager> Quest found: '" .. quest.name .. "'")
             return quest -- Retourne la quête si le nom correspond
         end
     end
