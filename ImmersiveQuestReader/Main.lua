@@ -20,3 +20,10 @@ Turbine.Chat.Received = function (sender, args)
     end
 end
 
+
+local quest  = QuestManager:GetQuestTextFromName("Needlehole Watch")
+if quest ~= nil then
+    QuestWindow:NewQuest(quest)
+else
+    Turbine.Shell.WriteLine("IQR> Quest not found")
+end
