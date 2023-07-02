@@ -253,6 +253,10 @@ function QuestWindow:AddItemsToControl(items, control)
     -- Loop through all quest rewards
     local xItem = 0;
     local yItem = 0;
+
+    if items.id and items.name then
+        items = {items};
+    end
     for key, item in pairs(items) do
         itemInfoControl = NewItemInfo(tonumber(item.id));
         if itemInfoControl then
