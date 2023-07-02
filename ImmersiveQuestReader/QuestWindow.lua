@@ -237,15 +237,26 @@ end
 function QuestWindow:UpdateInfo()
     self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
     self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
-
+    
+    if self.quest.rewards.object then
+        if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Reward") end;
+        self:AddItemsToControl(self.quest.rewards.object, self.itemRewardControl)
+    end;
+    if self.quest.rewards.selectOneOf and self.quest.rewards.selectOneOf.object then
+        if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Choice Rewards") end;
+        self:AddItemsToControl(self.quest.rewards.selectOneOf.object, self.itemChoiceControl) 
+    end;
         
-    -- Loop through all choices of quest rewards
+end
+
+function QuestWindow:AddItemsToControl(items, control)
+    -- Loop through all quest rewards
     local xItem = 0;
     local yItem = 0;
-    for key, item in pairs(self.quest.rewards.selectOneOf.object) do
+    for key, item in pairs(items) do
         itemInfoControl = NewItemInfo(tonumber(item.id));
         if itemInfoControl then
-            itemInfoControl:SetParent(self.itemChoiceControl);
+            itemInfoControl:SetParent(control);
             itemInfoControl:SetPosition(xItem, yItem);
             if item.quantity then 
                 Turbine.Shell.WriteLine("IQR.QuestWindow> Item Quantity");
