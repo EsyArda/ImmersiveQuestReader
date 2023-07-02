@@ -25,13 +25,13 @@ function QuestWindow:Constructor()
     self:SetText("Quest name");
     self:SetVisible(false); -- Hidden by default
 
-    -- Quest information on the left
+    -- ***** Quest information on the left *****
     local questInfoWidth = 200;
     self.questInfo = Turbine.UI.Control();
     self.questInfo:SetParent(self);
     self.questInfo:SetSize(questInfoWidth, windowHeight - topMargin - 2*yMargin - footerHeight);
     self.questInfo:SetPosition(xMargin, topMargin);
-    self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11));
+    if DEBUG then self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11)) end;
     self.questInfo:SetVisible(true);
 
     -- Label for the level
@@ -39,27 +39,17 @@ function QuestWindow:Constructor()
     self.levelLabel:SetParent(self.questInfo);
     self.levelLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
     self.levelLabel:SetPosition(0, 0);
-    self.levelLabel:SetBackColor(Turbine.UI.Color(0.74,0.29,0.18,0.11));
+    if DEBUG then self.levelLabel:SetBackColor(Turbine.UI.Color(0.74,0.29,0.18,0.11)) end;
     self.levelLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.levelLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
     self.levelLabel:SetText("Level 0");
-
-    -- Label for the bestower NPC
-    self.npcLabel = Turbine.UI.Label();
-    self.npcLabel:SetParent(self.questInfo);
-    self.npcLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
-    self.npcLabel:SetPosition(0, self.levelLabel:GetTop() + self.levelLabel:GetHeight());
-    self.npcLabel:SetBackColor(Turbine.UI.Color(0.74,0.32,0.22,0.56));
-    self.npcLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
-    self.npcLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
-    self.npcLabel:SetText("From NPC Name");
 
     -- Rewards
     self.rewardsLabel = Turbine.UI.Label();
     self.rewardsLabel:SetParent(self.questInfo);
     self.rewardsLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
-    self.rewardsLabel:SetPosition(0, self.npcLabel:GetTop() + self.levelLabel:GetHeight());
-    self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24));
+    self.rewardsLabel:SetPosition(0, self.levelLabel:GetTop() + self.levelLabel:GetHeight());
+    if DEBUG then self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24)) end;
     self.rewardsLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.rewardsLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
     self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
@@ -69,20 +59,20 @@ function QuestWindow:Constructor()
     self.xpLabel:SetParent(self.questInfo);
     self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
     self.xpLabel:SetPosition(0, self.rewardsLabel:GetTop() + self.levelLabel:GetHeight());
-    self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56));
+    if DEBUG then self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56)) end;
     self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.xpLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
     self.xpLabel:SetText("0 XP");
 
 
-    -- Create a label for the text of the quest
+    -- *** Text of the quest ***
     self.titleLabel = Turbine.UI.Label();
     self.titleLabel:SetParent(self);
     self.titleLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
     self.titleLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
     self.titleLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
     self.titleLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
-    self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29));
+    if DEBUG then self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29)) end;
     self.titleLabel:SetText("0 - Quest Name");
     self.titleLabel:SetVisible(true);
     
@@ -98,7 +88,7 @@ function QuestWindow:Constructor()
     self.currentPage = 1;
     
     
-    -- Can click on the text
+    -- Can click on the text to advance
     self.titleLabel.MouseUp = function(sender, args)
         if self.currentPage < #self.questPages then
             self.currentPage = self.currentPage + 1;
@@ -112,14 +102,33 @@ function QuestWindow:Constructor()
     end
 
 
+    -- ***** Footer *****
+    self.footer = Turbine.UI.Control();
+    self.footer:SetParent(self);
+    self.footer:SetSize(windowWidth - 2*xMargin, footerHeight);
+    self.footer:SetPosition(xMargin, windowHeight - footerHeight - yMargin);
+    if DEBUG then self.footer:SetBackColor(Turbine.UI.Color(0.74,0.22,0.17,0.35)) end;
+
     -- Number of pages
     self.pageNumber = Turbine.UI.Label();
-    self.pageNumber:SetParent(self);
-    self.pageNumber:SetSize(windowWidth - 40, 20);
-    self.pageNumber:SetPosition(20, windowHeight - 40);
-    self.pageNumber:SetBackColor(Turbine.UI.Color(0.74,0.11,0.29,0.16));
+    self.pageNumber:SetParent(self.footer);
+    self.pageNumber:SetSize(self.footer:GetWidth()/2, footerHeight);
+    self.pageNumber:SetPosition(self.footer:GetWidth()/2, 0);
+    if DEBUG then self.pageNumber:SetBackColor(Turbine.UI.Color(0.74,0.11,0.29,0.16)) end;
+    self.pageNumber:SetFont(Turbine.UI.Lotro.Font.BookAntiqua18);
     self.pageNumber:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
     self.pageNumber:SetText("Quest Name - 1/1");
+
+    -- NPC bestower name
+    self.npcLabel = Turbine.UI.Label();
+    self.npcLabel:SetParent(self.footer);
+    self.npcLabel:SetSize(self.footer:GetWidth()/2, footerHeight);
+    self.npcLabel:SetPosition(0, 0);
+    if DEBUG then self.npcLabel:SetBackColor(Turbine.UI.Color(0.74,0.32,0.22,0.56)) end;
+    self.npcLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua18);
+    self.npcLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.npcLabel:SetText("From NPC Name");
+    
 
 
 
@@ -151,7 +160,7 @@ function QuestWindow:ShowQuest(quest, state)
     
     local questText = "";
     if state ~= nil and state == "completed" then
-        Turbine.Shell.WriteLine("IQR> Quest completed");
+        if DEBUG then Turbine.Shell.WriteLine("IQR> Quest completed") end;
     else
         if quest.bestower.text ~= nil and type(quest.bestower.text) == "string" then
             questText = quest.bestower.text;
