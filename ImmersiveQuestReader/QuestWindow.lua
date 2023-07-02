@@ -33,36 +33,26 @@ function QuestWindow:Constructor()
     self.questInfo:SetPosition(xMargin, topMargin);
     if DEBUG then self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11)) end;
     self.questInfo:SetVisible(true);
-
-    -- Label for the level
-    self.levelLabel = Turbine.UI.Label();
-    self.levelLabel:SetParent(self.questInfo);
-    self.levelLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
-    self.levelLabel:SetPosition(0, 0);
-    if DEBUG then self.levelLabel:SetBackColor(Turbine.UI.Color(0.74,0.29,0.18,0.11)) end;
-    self.levelLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
-    self.levelLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
-    self.levelLabel:SetText("Level 0");
+    
+    -- Experience
+    self.xpLabel = Turbine.UI.Label();
+    self.xpLabel:SetParent(self.questInfo);
+    self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.xpLabel:SetPosition(0, 0);
+    if DEBUG then self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56)) end;
+    self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.xpLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.xpLabel:SetText("0 XP");
 
     -- Rewards
     self.rewardsLabel = Turbine.UI.Label();
     self.rewardsLabel:SetParent(self.questInfo);
     self.rewardsLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
-    self.rewardsLabel:SetPosition(0, self.levelLabel:GetTop() + self.levelLabel:GetHeight());
+    self.rewardsLabel:SetPosition(0, self.xpLabel:GetTop() + self.xpLabel:GetHeight());
     if DEBUG then self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24)) end;
     self.rewardsLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.rewardsLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
     self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
-
-    -- Experience
-    self.xpLabel = Turbine.UI.Label();
-    self.xpLabel:SetParent(self.questInfo);
-    self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
-    self.xpLabel:SetPosition(0, self.rewardsLabel:GetTop() + self.levelLabel:GetHeight());
-    if DEBUG then self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56)) end;
-    self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
-    self.xpLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
-    self.xpLabel:SetText("0 XP");
 
 
     -- *** Text of the quest ***
@@ -195,11 +185,10 @@ end
 
 function QuestWindow:UpdateFooterText()
     self.pageNumber:SetText(self.quest.name .. " - " .. self.currentPage .. "/" .. #self.questPages);
+    self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
 end
 
 function QuestWindow:UpdateInfo()
-    self.levelLabel:SetText("Level " .. self.quest.level);
-    self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
-    self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
     self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
+    self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
 end
