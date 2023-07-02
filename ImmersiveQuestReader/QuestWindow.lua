@@ -2,6 +2,7 @@
 
 import "Turbine.UI.Lotro";
 import "Turbine.Gameplay";
+import "EsyIQR.ImmersiveQuestReader.Utils";
 
 QuestWindow = class(Turbine.UI.Lotro.Window);
 
@@ -37,7 +38,7 @@ function QuestWindow:Constructor()
     -- Experience
     self.xpLabel = Turbine.UI.Label();
     self.xpLabel:SetParent(self.questInfo);
-    self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/5);
     self.xpLabel:SetPosition(0, 0);
     if DEBUG then self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56)) end;
     self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
@@ -47,7 +48,7 @@ function QuestWindow:Constructor()
     -- Gold
     self.rewardsLabel = Turbine.UI.Label();
     self.rewardsLabel:SetParent(self.questInfo);
-    self.rewardsLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.rewardsLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/5);
     self.rewardsLabel:SetPosition(0, self.xpLabel:GetTop() + self.xpLabel:GetHeight());
     if DEBUG then self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24)) end;
     self.rewardsLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
@@ -58,16 +59,46 @@ function QuestWindow:Constructor()
     -- Objects
     self.objectsControl = Turbine.UI.Control();
     self.objectsControl:SetParent(self.questInfo);
-    self.objectsControl:SetSize(questInfoWidth, self.questInfo:GetHeight()/2);
+    self.objectsControl:SetSize(questInfoWidth, self.questInfo:GetHeight()*3/5);
     self.objectsControl:SetPosition(0, self.rewardsLabel:GetTop() + self.rewardsLabel:GetHeight());
     if DEBUG then self.objectsControl:SetBackColor(Turbine.UI.Color(0.74,0.21,0.27,0.57)) end;
 
 
-    -- item = NewItemInfo(1879051726);
-    -- item:SetParent(self.objectsControl);
-    -- item:SetPosition(0, 0);
-    -- item:SetVisible(true);
-    -- item:GetBackColor(Turbine.UI.Color(0.74,1,0,0));
+    -- Object reward label
+    self.itemRewardLabel = Turbine.UI.Label();
+    self.itemRewardLabel:SetParent(self.objectsControl);
+    self.itemRewardLabel:SetSize(questInfoWidth, self.objectsControl:GetHeight()/8);
+    self.itemRewardLabel:SetPosition(0, 0);
+    self.itemRewardLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.itemRewardLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.itemRewardLabel:SetText("Rewards: ");
+    if DEBUG then self.itemRewardLabel:SetBackColor(Turbine.UI.Color(0.74,0.27,0.34,0.12)) end;
+
+    -- Object reward control
+    self.itemRewardControl = Turbine.UI.Control();
+    self.itemRewardControl:SetParent(self.objectsControl);
+    self.itemRewardControl:SetSize(questInfoWidth, self.objectsControl:GetHeight()*3/8);
+    self.itemRewardControl:SetPosition(0, self.itemRewardLabel:GetTop() + self.itemRewardLabel:GetHeight());
+    if DEBUG then self.itemRewardControl:SetBackColor(Turbine.UI.Color(0.74,0.57,0.21,0.49)) end;
+
+
+    -- Object choice label
+    self.choiceLabel = Turbine.UI.Label();
+    self.choiceLabel:SetParent(self.objectsControl);
+    self.choiceLabel:SetSize(questInfoWidth, self.objectsControl:GetHeight()/8);
+    self.choiceLabel:SetPosition(0, self.itemRewardControl:GetTop() + self.itemRewardControl:GetHeight());
+    self.choiceLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.choiceLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.choiceLabel:SetText("Choice: ");
+    if DEBUG then self.choiceLabel:SetBackColor(Turbine.UI.Color(0.74,0.37,0.2,0.2)) end;
+
+    -- Object choice control
+    self.itemChoiceControl = Turbine.UI.Control();
+    self.itemChoiceControl:SetParent(self.objectsControl);
+    self.itemChoiceControl:SetSize(questInfoWidth, self.objectsControl:GetHeight()*3/8);
+    self.itemChoiceControl:SetPosition(0, self.choiceLabel:GetTop() + self.choiceLabel:GetHeight());
+    if DEBUG then self.itemChoiceControl:SetBackColor(Turbine.UI.Color(0.74,0.29,0.77,0.63)) end;
+
 
 
     -- *** Text of the quest ***
@@ -112,7 +143,7 @@ function QuestWindow:Constructor()
     self.footer:SetParent(self);
     self.footer:SetSize(windowWidth - 2*xMargin, footerHeight);
     self.footer:SetPosition(xMargin, windowHeight - footerHeight - yMargin);
-    if DEBUG then self.footer:SetBackColor(Turbine.UI.Color(0.74,0.22,0.17,0.35)) end;
+    if DEBUG then self.footer:SetBackColor(Turbine.UI.Color(0.95,0.05,0,0.05)) end;
 
     -- Number of pages
     self.pageNumber = Turbine.UI.Label();
@@ -208,13 +239,13 @@ function QuestWindow:UpdateInfo()
     self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
 
         
-    -- Loop through all quest rewards
+    -- Loop through all choices of quest rewards
     local xItem = 0;
     local yItem = 0;
     for key, item in pairs(self.quest.rewards.selectOneOf.object) do
         itemInfoControl = NewItemInfo(tonumber(item.id));
         if itemInfoControl then
-            itemInfoControl:SetParent(self.objectsControl);
+            itemInfoControl:SetParent(self.itemChoiceControl);
             itemInfoControl:SetPosition(xItem, yItem);
             if item.quantity then 
                 Turbine.Shell.WriteLine("IQR.QuestWindow> Item Quantity");
@@ -224,59 +255,4 @@ function QuestWindow:UpdateInfo()
             xItem = xItem + itemInfoControl:GetWidth();
         end
     end
-end
-
-
--- Function from the ItemTreasury plugin (thank you Galhulad!)
-function NewItemInfo(itemID)
-    if itemID == nil then return end;
-
-    local cItemInspect = Turbine.UI.Lotro.Quickslot();
-    cItemInspect:SetSize(36,36);
-    cItemInspect:SetVisible(true);
-
-    local cItemInfo = Turbine.UI.Lotro.ItemInfoControl();
-    cItemInfo:SetSize(36,36);
-    cItemInfo:SetAllowDrop(false);
-    cItemInfo:SetVisible(true);
-    cItemInfo["ItemID"] = 0;
-
-    cItemInfo.SetItem = function (sender, newItemID)
-        if newItemID == nil then return end;
-        local itemHex = TO_HEX(newItemID);
-
-        local function SetInspectIcon() 	-- PCALL THIS incase item does not exist
-            cItemInspect:SetShortcut(Turbine.UI.Lotro.Shortcut(Turbine.UI.Lotro.ShortcutType.Item, "0x0,0x" .. itemHex));
-        end
-
-        if pcall(SetInspectIcon) then
-            cItemInspect:SetShortcut(Turbine.UI.Lotro.Shortcut(Turbine.UI.Lotro.ShortcutType.Item, "0x0,0x" .. itemHex)); -- works u23
-            local itemInfo = cItemInspect:GetShortcut():GetItem():GetItemInfo();
-            cItemInfo:SetItemInfo(itemInfo);
-            cItemInfo:SetQuantity(1);
-            cItemInfo.ItemID = newItemID;
-        end
-
-    end
-
-    cItemInfo:SetItem(itemID);
-
-    return cItemInfo;
-end
-
--- Function from the ItemTreasury plugin (thank you Galhulad!)
-function TO_HEX(IN)
-	local B,K,OUT,I,D=16,"0123456789ABCDEF","",0,0;
-
-		if IN == 0 or IN == "0" then
-			return "00";
-		end
-
-		while IN>0 do
-		I=I+1
-		IN,D=math.floor(IN/B),math.mod(IN,B)+1
-		OUT=string.sub(K,D,D)..OUT
-	end
-	if string.len(OUT) == 1 then OUT = "0" .. OUT end;
-	return OUT
 end
