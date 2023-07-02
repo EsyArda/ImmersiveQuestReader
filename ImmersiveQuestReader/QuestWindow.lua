@@ -54,9 +54,28 @@ function QuestWindow:Constructor()
     self.npcLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
     self.npcLabel:SetText("From NPC Name");
 
+    -- Rewards
+    self.rewardsLabel = Turbine.UI.Label();
+    self.rewardsLabel:SetParent(self.questInfo);
+    self.rewardsLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.rewardsLabel:SetPosition(0, self.npcLabel:GetTop() + self.levelLabel:GetHeight());
+    self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24));
+    self.rewardsLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.rewardsLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
+
+    -- Experience
+    self.xpLabel = Turbine.UI.Label();
+    self.xpLabel:SetParent(self.questInfo);
+    self.xpLabel:SetSize(questInfoWidth, self.questInfo:GetHeight()/4);
+    self.xpLabel:SetPosition(0, self.rewardsLabel:GetTop() + self.levelLabel:GetHeight());
+    self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56));
+    self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
+    self.xpLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.xpLabel:SetText("0 XP");
+
 
     -- Create a label for the text of the quest
-    self.questText = "0 - Quest Name"
     self.titleLabel = Turbine.UI.Label();
     self.titleLabel:SetParent(self);
     self.titleLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
@@ -64,7 +83,7 @@ function QuestWindow:Constructor()
     self.titleLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
     self.titleLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
     self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29));
-    self.titleLabel:SetText(self.questText);
+    self.titleLabel:SetText("0 - Quest Name");
     self.titleLabel:SetVisible(true);
     
 
@@ -159,4 +178,6 @@ end
 function QuestWindow:UpdateInfo()
     self.levelLabel:SetText("Level " .. self.quest.level);
     self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
+    self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
+    self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
 end
