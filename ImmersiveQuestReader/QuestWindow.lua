@@ -109,13 +109,15 @@ function QuestWindow:Constructor()
     self.titleLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
     self.titleLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
     if DEBUG then self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29)) end;
-    self.titleLabel:SetText("0 - Quest Name");
+    self.titleLabel:SetText("0 - Quest Name (1/1)");
     self.titleLabel:SetVisible(true);
     
 
     -- Player (needed for their name)
     self.player = Turbine.Gameplay.LocalPlayer:GetInstance();
     
+    self.questQueue = {};
+    self.questQueueIndex = 1;
     -- Current quest displayed
     self.quest = nil;
     -- Table of lines of the quest text
@@ -127,13 +129,14 @@ function QuestWindow:Constructor()
     -- Can click on the text to advance
     self.titleLabel.MouseUp = function(sender, args)
         if self.currentPage < #self.questPages then
+            -- Display next page
             self.currentPage = self.currentPage + 1;
-            self:SetQuestText(self.questPages[self.currentPage]);
+            self:UpdateQuestText();
             self:UpdateFooterText();
         else
             self.questPages = {};
             self.currentPage = 1;
-            self:SetVisible(false);
+            self:ShowNextQuestInQueueIfExists();
         end    
     end
 
@@ -181,27 +184,28 @@ function QuestWindow:Constructor()
 
 end
 
-function QuestWindow:UpdateWindowTitle()
-    self:SetText(self.quest.level .. " - " .. self.quest.name);
-end
-
-function QuestWindow:SetQuestText(questText)
-    self.titleLabel:SetText(questText);
-end
-
-function QuestWindow:ShowQuest(quest, state)
-    self.quest = quest;
-    self:SetVisible(true);
-    self:UpdateWindowTitle();
+function QuestWindow:EnqueueQuest(quest, state)
+    self.questQueue[#self.questQueue + 1] = {quest, state};
+    Turbine.Shell.WriteLine("IQR.QuestWindow> Quest " .. quest.name .." added to the queue");
     
+    if not self:IsVisible() then
+        self.quest = quest;
+        self:ShowQuest();
+    end
+    self:UpdateWindowTitle(); -- To update the number of quests in the queue
+end
+
+function QuestWindow:ShowQuest()
+
+    local state = self.questQueue[self.questQueueIndex].state;
     local questText = "";
     if state ~= nil and state == "completed" then
         if DEBUG then Turbine.Shell.WriteLine("IQR> Quest completed") end;
     else
-        if quest.bestower.text ~= nil and type(quest.bestower.text) == "string" then
-            questText = quest.bestower.text;
+        if self.quest.bestower.text ~= nil and type(self.quest.bestower.text) == "string" then
+            questText = self.quest.bestower.text;
         else
-            questText = quest.bestower[1].text;
+            questText = self.quest.bestower[1].text;
         end
 
     end        
@@ -216,11 +220,23 @@ function QuestWindow:ShowQuest(quest, state)
         end
     end
 
-    self:SetQuestText(self.questPages[1]);
-    self:UpdateFooterText();
-    self:UpdateInfo();
+
+    self:SetVisible(true);
+    self:UpdateWindow();
 end
 
+function QuestWindow:UpdateWindowTitle()
+    if #self.questQueue > 1 then
+        self:SetText(self.quest.level .. " - " .. self.quest.name .. " (" .. self.questQueueIndex .. "/" .. #self.questQueue .. ")");
+    else
+        self:SetText(self.quest.level .. " - " .. self.quest.name);
+    end
+end
+
+
+function QuestWindow:UpdateQuestText()
+    self.titleLabel:SetText(self.questPages[self.currentPage]);
+end
 
 function QuestWindow:ComputeQuestText(questText)
     local questTextComputed = string.gsub(questText, "${PLAYER}", self.player:GetName());
@@ -235,19 +251,32 @@ function QuestWindow:UpdateFooterText()
 end
 
 function QuestWindow:UpdateInfo()
+    Turbine.Shell.WriteLine("IQR.QuestWindow> UpdateInfo " .. self.quest.name);
     self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
-    self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
+    if self.quest.rewards.money then
+        self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
+    else
+        self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
+    end
     
     if self.quest.rewards.object then
-        if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Reward") end;
+        -- if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Reward") end;
         self:AddItemsToControl(self.quest.rewards.object, self.itemRewardControl)
     end;
     if self.quest.rewards.selectOneOf and self.quest.rewards.selectOneOf.object then
-        if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Choice Rewards") end;
+        -- if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Choice Rewards") end;
         self:AddItemsToControl(self.quest.rewards.selectOneOf.object, self.itemChoiceControl) 
     end;
         
 end
+
+function QuestWindow:UpdateWindow()
+    self:UpdateWindowTitle();
+    self:UpdateQuestText();
+    self:UpdateFooterText();
+    self:UpdateInfo();
+end
+    
 
 function QuestWindow:AddItemsToControl(items, control)
     -- Loop through all quest rewards
@@ -269,5 +298,19 @@ function QuestWindow:AddItemsToControl(items, control)
             itemInfoControl:SetVisible(true);
             xItem = xItem + itemInfoControl:GetWidth();
         end
+    end
+end
+
+function QuestWindow:ShowNextQuestInQueueIfExists()
+    if self.questQueueIndex < #self.questQueue then
+        -- Display next quest
+        self.questQueueIndex = self.questQueueIndex + 1;
+        self.quest = self.questQueue[self.questQueueIndex][1];
+        Turbine.Shell.WriteLine("IQR.QuestWindow> Next quest in queue : " .. self.quest.name);
+        self:ShowQuest(); 
+    else
+        self:SetVisible(false);
+        self.questQueue = {};
+        self.questQueueIndex = 1;
     end
 end
