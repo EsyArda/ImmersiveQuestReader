@@ -121,6 +121,19 @@ function QuestWindow:Constructor()
     self.pageNumber:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
     self.pageNumber:SetText("Quest Name - 1/1");
 
+
+
+
+    -- Hide the window when the UI is hidden    
+    self:SetWantsKeyEvents(true);
+    self.KeyDown = function(sender, args)
+        if (args.Action == Turbine.UI.Lotro.Action.Escape) then
+            self:SetVisible(false);
+        elseif (args.Action == 268435635) then
+            self:SetVisible(not self:IsVisible());
+        end
+    end
+
 end
 
 function QuestWindow:UpdateWindowTitle()
