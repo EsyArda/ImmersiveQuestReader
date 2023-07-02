@@ -80,6 +80,7 @@ function QuestWindow:Constructor()
     self.itemRewardControl:SetSize(questInfoWidth, self.objectsControl:GetHeight()*3/8);
     self.itemRewardControl:SetPosition(0, self.itemRewardLabel:GetTop() + self.itemRewardLabel:GetHeight());
     if DEBUG then self.itemRewardControl:SetBackColor(Turbine.UI.Color(0.74,0.57,0.21,0.49)) end;
+    self.itemRewardControl.children = {}; -- List of items
 
 
     -- Object choice label
@@ -98,6 +99,7 @@ function QuestWindow:Constructor()
     self.itemChoiceControl:SetSize(questInfoWidth, self.objectsControl:GetHeight()*3/8);
     self.itemChoiceControl:SetPosition(0, self.choiceLabel:GetTop() + self.choiceLabel:GetHeight());
     if DEBUG then self.itemChoiceControl:SetBackColor(Turbine.UI.Color(0.74,0.29,0.77,0.63)) end;
+    self.itemChoiceControl.children = {}; -- List of items
 
 
 
@@ -252,13 +254,22 @@ end
 
 function QuestWindow:UpdateInfo()
     Turbine.Shell.WriteLine("IQR.QuestWindow> UpdateInfo " .. self.quest.name);
+    -- XP
     self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
+    -- Money
     if self.quest.rewards.money then
         self.rewardsLabel:SetText(tostring(self.quest.rewards.money.gold) .. " Gold " .. tostring(self.quest.rewards.money.silver) .. " Silver " .. tostring(self.quest.rewards.money.copper) .. " Copper");
     else
         self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
     end
-    
+    -- Rewards
+    -- Remove previous rewards
+    for key, value in pairs(self.itemRewardControl.children) do
+        value:SetVisible(false);
+    end
+    for key, value in pairs(self.itemChoiceControl.children) do
+        value:SetVisible(false);
+    end
     if self.quest.rewards.object then
         -- if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Reward") end;
         self:AddItemsToControl(self.quest.rewards.object, self.itemRewardControl)
@@ -287,7 +298,7 @@ function QuestWindow:AddItemsToControl(items, control)
         items = {items};
     end
     for key, item in pairs(items) do
-        itemInfoControl = NewItemInfo(tonumber(item.id));
+        local itemInfoControl = NewItemInfo(tonumber(item.id));
         if itemInfoControl then
             itemInfoControl:SetParent(control);
             itemInfoControl:SetPosition(xItem, yItem);
@@ -295,6 +306,7 @@ function QuestWindow:AddItemsToControl(items, control)
                 Turbine.Shell.WriteLine("IQR.QuestWindow> Item Quantity");
                 itemInfoControl:SetQuantity(tonumber(item.quantity)) 
             end
+            table.insert(control.children, itemInfoControl);
             itemInfoControl:SetVisible(true);
             xItem = xItem + itemInfoControl:GetWidth();
         end
