@@ -23,11 +23,12 @@ function QuestWindow:Constructor()
     local y = (screenHeight - windowHeight) / 2;
     self:SetPosition(x, y);
     self:SetMouseVisible(true);
-    self:SetText("Quest name");
+    self:SetText("0 - Quest Name (1/1)");
     self:SetVisible(false); -- Hidden by default
 
     -- ***** Quest information on the left *****
     local questInfoWidth = 200;
+    local questInfoFontColor = Turbine.UI.Color(0.9,0.9,1);
     self.questInfo = Turbine.UI.Control();
     self.questInfo:SetParent(self);
     self.questInfo:SetSize(questInfoWidth, windowHeight - topMargin - 2*yMargin - footerHeight);
@@ -43,6 +44,7 @@ function QuestWindow:Constructor()
     if DEBUG then self.xpLabel:SetBackColor(Turbine.UI.Color(0.74,0.22,0.52,0.56)) end;
     self.xpLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.xpLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.xpLabel:SetForeColor(questInfoFontColor);
     self.xpLabel:SetText("0 XP");
 
     -- Gold
@@ -53,6 +55,7 @@ function QuestWindow:Constructor()
     if DEBUG then self.rewardsLabel:SetBackColor(Turbine.UI.Color(0.74,0.56,0.22,0.24)) end;
     self.rewardsLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.rewardsLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleCenter);
+    self.rewardsLabel:SetForeColor(questInfoFontColor);
     self.rewardsLabel:SetText("0 Gold 0 Silver 0 Copper");
 
 
@@ -71,6 +74,7 @@ function QuestWindow:Constructor()
     self.itemRewardLabel:SetPosition(0, 0);
     self.itemRewardLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.itemRewardLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.itemRewardLabel:SetForeColor(questInfoFontColor);
     self.itemRewardLabel:SetText("Rewards: ");
     if DEBUG then self.itemRewardLabel:SetBackColor(Turbine.UI.Color(0.74,0.27,0.34,0.12)) end;
 
@@ -90,6 +94,7 @@ function QuestWindow:Constructor()
     self.choiceLabel:SetPosition(0, self.itemRewardControl:GetTop() + self.itemRewardControl:GetHeight());
     self.choiceLabel:SetFont(Turbine.UI.Lotro.Font.TrajanPro16);
     self.choiceLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.choiceLabel:SetForeColor(questInfoFontColor);
     self.choiceLabel:SetText("Choice: ");
     if DEBUG then self.choiceLabel:SetBackColor(Turbine.UI.Color(0.74,0.37,0.2,0.2)) end;
 
@@ -103,16 +108,16 @@ function QuestWindow:Constructor()
 
 
 
-    -- *** Text of the quest ***
-    self.titleLabel = Turbine.UI.Label();
-    self.titleLabel:SetParent(self);
-    self.titleLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
-    self.titleLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
-    self.titleLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
-    self.titleLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
-    if DEBUG then self.titleLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29)) end;
-    self.titleLabel:SetText("0 - Quest Name (1/1)");
-    self.titleLabel:SetVisible(true);
+    -- *** Quest text ***
+    self.questTextLabel = Turbine.UI.Label();
+    self.questTextLabel:SetParent(self);
+    self.questTextLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
+    self.questTextLabel:SetPosition(self.questInfo:GetLeft() + self.questInfo:GetWidth() + xMargin, topMargin);
+    self.questTextLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua24);
+    self.questTextLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    if DEBUG then self.questTextLabel:SetBackColor(Turbine.UI.Color(0.74,0.11,0.17,0.29)) end;
+    self.questTextLabel:SetText("0 - Quest Name (1/1)");
+    self.questTextLabel:SetVisible(true);
     
 
     -- Player (needed for their name)
@@ -129,7 +134,7 @@ function QuestWindow:Constructor()
     
     
     -- Can click on the text to advance
-    self.titleLabel.MouseUp = function(sender, args)
+    self.questTextLabel.MouseUp = function(sender, args)
         if self.currentPage < #self.questPages then
             -- Display next page
             self.currentPage = self.currentPage + 1;
@@ -158,6 +163,7 @@ function QuestWindow:Constructor()
     if DEBUG then self.pageNumber:SetBackColor(Turbine.UI.Color(0.74,0.11,0.29,0.16)) end;
     self.pageNumber:SetFont(Turbine.UI.Lotro.Font.BookAntiqua18);
     self.pageNumber:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleRight);
+    self.pageNumber:SetForeColor(Turbine.UI.Color(1,1,0.5));
     self.pageNumber:SetText("Quest Name - 1/1");
 
     -- NPC bestower name
@@ -168,6 +174,7 @@ function QuestWindow:Constructor()
     if DEBUG then self.npcLabel:SetBackColor(Turbine.UI.Color(0.74,0.32,0.22,0.56)) end;
     self.npcLabel:SetFont(Turbine.UI.Lotro.Font.BookAntiqua18);
     self.npcLabel:SetTextAlignment(Turbine.UI.ContentAlignment.MiddleLeft);
+    self.npcLabel:SetForeColor(Turbine.UI.Color(1,1,0.5));
     self.npcLabel:SetText("From NPC Name");
     
 
@@ -188,7 +195,7 @@ end
 
 function QuestWindow:EnqueueQuest(quest, state)
     self.questQueue[#self.questQueue + 1] = {quest, state};
-    Turbine.Shell.WriteLine("IQR.QuestWindow> Quest " .. quest.name .." added to the queue");
+    if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Quest " .. quest.name .." added to the queue") end;
     
     if not self:IsVisible() then
         self.quest = quest;
@@ -237,7 +244,7 @@ end
 
 
 function QuestWindow:UpdateQuestText()
-    self.titleLabel:SetText(self.questPages[self.currentPage]);
+    self.questTextLabel:SetText(self.questPages[self.currentPage]);
 end
 
 function QuestWindow:ComputeQuestText(questText)
@@ -253,7 +260,7 @@ function QuestWindow:UpdateFooterText()
 end
 
 function QuestWindow:UpdateInfo()
-    Turbine.Shell.WriteLine("IQR.QuestWindow> UpdateInfo " .. self.quest.name);
+    if DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> UpdateInfo " .. self.quest.name) end;
     -- XP
     self.xpLabel:SetText(tostring(self.quest.rewards.XP.quantity) .. " XP");
     -- Money
