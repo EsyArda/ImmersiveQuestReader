@@ -1,6 +1,6 @@
 -- Quest Manager
 
-import "EsyIQR.ImmersiveQuestReader.QuestTestDatabase"
+import "EsyIQR.ImmersiveQuestReader.QuestDatabase"
 
 QuestManager = class();
 
@@ -10,7 +10,7 @@ end
 
 function QuestManager:IsNewQuest(chatMessage)
     if string.find(chatMessage, "New Quest: ") then
-        Turbine.Shell.WriteLine("IQR.QuestManager> New quest found")
+        if DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> New quest found") end
         return true
     else
         return false
@@ -37,7 +37,7 @@ end
 function QuestManager:GetQuestTextFromName(questName)
     for _, quest in pairs(self.quests) do
         if quest.name == questName then
-            Turbine.Shell.WriteLine("IQR.QuestManager> Quest found: '" .. quest.name .. "'")
+            if DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> Quest found: '" .. quest.name .. "'") end
             return quest -- Retourne la quête si le nom correspond
         end
     end
