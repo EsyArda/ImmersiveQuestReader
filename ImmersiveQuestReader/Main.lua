@@ -2,7 +2,7 @@ import "Turbine";
 import "EsyIQR.ImmersiveQuestReader.QuestWindow"
 import "EsyIQR.ImmersiveQuestReader.QuestManager"
 
-DEBUG = true
+DEBUG = false
 
 if DEBUG then Turbine.Shell.WriteLine("\nIQR> Starting Immersive Quest Reader...") end
 
@@ -25,16 +25,18 @@ Turbine.Chat.Received = function (sender, args)
     end
 end
 
-local quest  = QuestManager:GetQuestTextFromName("Fate of the Black Rider")
-if quest ~= nil then
-    QuestWindow:EnqueueQuest(quest, "new")
-else
-    Turbine.Shell.WriteLine("IQR> Quest not found")
-end
 
-quest  = QuestManager:GetQuestTextFromName("Untangled Webs")
-if quest ~= nil then
-    QuestWindow:EnqueueQuest(quest, "new")
-else
-    Turbine.Shell.WriteLine("IQR> Quest not found")
-end
+
+-- local quest  = QuestManager:GetQuestTextFromName("Fate of the Black Rider")
+-- if quest ~= nil then
+--     QuestWindow:EnqueueQuest(quest, "new")
+-- else
+--     Turbine.Shell.WriteLine("IQR> Quest not found")
+-- end
+
+-- quest  = QuestManager:GetQuestTextFromName("Untangled Webs")
+-- if quest ~= nil then
+--     QuestWindow:EnqueueQuest(quest, "new")
+-- else
+--     Turbine.Shell.WriteLine("IQR> Quest not found")
+-- end
