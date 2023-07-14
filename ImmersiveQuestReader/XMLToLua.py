@@ -135,16 +135,17 @@ def main():
     # Convert XML trees to Lua tables
     for level_range, xml_tree in divided_xml_trees.items():
         lua_table = xml_to_dict(xml_tree.getroot())
+        level_range_str = str(level_range).replace('-', 'm')
         print(f"Converted XML to Lua table for level range {level_range} in {time.time() - start} seconds.")
 
         # Format the Lua table as a string
-        lua_table_quests_str = f"QUESTS{str(level_range).replace('-', 'm')} = " + format_lua_table(lua_table)
+        lua_table_quests_str = f"QUESTS{level_range_str} = " + format_lua_table(lua_table)
         print(f"Formatted the Lua table as a string for level range {level_range} in {time.time() - start} seconds.")
 
         # Write Lua table to file
-        with open(f'ImmersiveQuestReader/QuestDatabase{level_range}.lua', 'w', encoding="utf-8") as file:
+        with open(f'ImmersiveQuestReader/QuestDatabase{level_range_str}.lua', 'w', encoding="utf-8") as file:
             file.write(lua_table_quests_str)
-        print(f"Wrote the Lua table to the 'QuestDatabase{level_range}.lua' file in {time.time() - start} seconds.")
+        print(f"Wrote the Lua table to the 'QuestDatabase{level_range_str}.lua' file in {time.time() - start} seconds.")
         
     # lua_table = xml_to_dict(xml_tree.getroot())
     # print("Converted XML to Lua table.")
