@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import time
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -80,31 +81,85 @@ def format_lua_table_list(list, indent):
     return formatted
 
 
+# Function to divide the XML into multiple XML trees based on the level of the quest
+def divide_xml_by_level(root):
+    quests_by_level = {}
+    for quest in root.findall('quest'):
+        level = quest.get('level')
+        level_range = int(level) // 10
+        if level_range in quests_by_level:
+            quests_by_level[level_range].append(quest)
+        else:
+            quests_by_level[level_range] = [quest]
+
+    divided_xml_trees = {}
+    for level_range, quests in quests_by_level.items():
+        divided_xml_trees[level_range] = ET.ElementTree(ET.Element(root.tag))
+        for quest in quests:
+            divided_xml_trees[level_range].getroot().append(quest)
+    
+    return divided_xml_trees
+
+        
 
 
-# Load key-value from the labels XML file and convert it to a dictionary
-key_value_dict = extract_key_value_pairs('ImmersiveQuestReader/test-data/labels/en/quests.xml')
 
-# Replace key strings with their values in the quests XML file
-xml_tree = replace_key('ImmersiveQuestReader/test-data/quests/quests.xml', key_value_dict)
+def main():
 
-# Write the labeled quests XML file
-xml_tree.write('ImmersiveQuestReader/test-data/quests-en.xml', encoding="utf-8", xml_declaration=True)
-# Repeat for every language
+    start = time.time()
 
-# # Load the labeled XML file
-# tree = ET.parse('ImmersiveQuestReader/quests-en.xml')
-# root = tree.getroot()
+    # Load key-value from the labels XML file and convert it to a dictionary
+    key_value_dict = extract_key_value_pairs('ImmersiveQuestReader/lotro-data/labels/en/quests.xml')
+    print(f"Extracted key-value pairs from the labels XML file in {time.time() - start} seconds.")
 
-# Convert XML to Lua table
-lua_table = xml_to_dict(xml_tree.getroot())
+    # Replace key strings with their values in the quests XML file
+    xml_tree = replace_key('ImmersiveQuestReader/lotro-data/quests/quests.xml', key_value_dict)
+    print(f"Replaced keys with their values in the english quests XML file in {time.time() - start} seconds.")
 
-# Format the Lua table as a string
-lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
 
-# Output the Lua table
-# print(lua_table_quests_str)
+    # ----- Write and read intermediate XML files -----
+    # Write the labeled quests XML file
+    # xml_tree.write('ImmersiveQuestReader/quests-en.xml', encoding="utf-8", xml_declaration=True)
+    # print("Wrote the labeled english quests XML file.")
+    # Repeat for every language
 
-# Write Lua table to file
-with open('ImmersiveQuestReader/TestQuests.lua', 'w', encoding="utf-8") as file:
-    file.write(lua_table_quests_str)
+    # # Load the labeled XML file
+    # tree = ET.parse('ImmersiveQuestReader/quests-en.xml')
+    # root = tree.getroot()
+    # -----
+
+
+    # Divide the XML into multiple XML trees based on the level of the quest
+    divided_xml_trees = divide_xml_by_level(xml_tree.getroot())
+
+    # Convert XML trees to Lua tables
+    for level_range, xml_tree in divided_xml_trees.items():
+        lua_table = xml_to_dict(xml_tree.getroot())
+        print(f"Converted XML to Lua table for level range {level_range} in {time.time() - start} seconds.")
+
+        # Format the Lua table as a string
+        lua_table_quests_str = f"QUESTS{str(level_range).replace('-', 'm')} = " + format_lua_table(lua_table)
+        print(f"Formatted the Lua table as a string for level range {level_range} in {time.time() - start} seconds.")
+
+        # Write Lua table to file
+        with open(f'ImmersiveQuestReader/QuestDatabase{level_range}.lua', 'w', encoding="utf-8") as file:
+            file.write(lua_table_quests_str)
+        print(f"Wrote the Lua table to the 'QuestDatabase{level_range}.lua' file in {time.time() - start} seconds.")
+        
+    # lua_table = xml_to_dict(xml_tree.getroot())
+    # print("Converted XML to Lua table.")
+    # 
+    # # Format the Lua table as a string
+    # lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
+    # print("Formatted the Lua table as a string.")
+    # 
+    # # Output the Lua table
+    # # print(lua_table_quests_str)
+    # 
+    # # Write Lua table to file
+    # with open('ImmersiveQuestReader/QuestDatabase.lua', 'w', encoding="utf-8") as file:
+    #     file.write(lua_table_quests_str)
+    # print("Wrote the Lua table to the 'QuestDatabase.lua' file.")
+
+if __name__ == "__main__":
+    main()
