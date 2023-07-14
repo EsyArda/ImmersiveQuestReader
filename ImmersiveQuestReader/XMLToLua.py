@@ -1,5 +1,29 @@
 import xml.etree.ElementTree as ET
 
+# Function to extract key-value pairs from the labels xml
+def extract_key_value_pairs(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    key_value_dict = {}
+    for element in root.iter('label'):
+        key = element.get('key')
+        value = element.get('value')
+        key_value_dict[key] = value
+    return key_value_dict
+
+# Function to replace key strings with their values in the xml
+def replace_key(xml_file, key_value_dict):
+    # Load the quests XML file
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    for element in root.iter():
+        for key, value in element.attrib.items():
+            if value in key_value_dict:
+                element.attrib[key] = key_value_dict[value]
+    return tree
+
+
 # Function to convert XML element to Lua table
 def xml_to_dict(element):
     dictionary = {}
@@ -56,12 +80,24 @@ def format_lua_table_list(list, indent):
     return formatted
 
 
-# Load the XML file
-tree = ET.parse('ImmersiveQuestReader\quests-en.xml')
-root = tree.getroot()
+
+
+# Load key-value from the labels XML file and convert it to a dictionary
+key_value_dict = extract_key_value_pairs('ImmersiveQuestReader/test-data/labels/en/quests.xml')
+
+# Replace key strings with their values in the quests XML file
+xml_tree = replace_key('ImmersiveQuestReader/test-data/quests/quests.xml', key_value_dict)
+
+# Write the labeled quests XML file
+xml_tree.write('ImmersiveQuestReader/test-data/quests-en.xml', encoding="utf-8", xml_declaration=True)
+# Repeat for every language
+
+# # Load the labeled XML file
+# tree = ET.parse('ImmersiveQuestReader/quests-en.xml')
+# root = tree.getroot()
 
 # Convert XML to Lua table
-lua_table = xml_to_dict(root)
+lua_table = xml_to_dict(xml_tree.getroot())
 
 # Format the Lua table as a string
 lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
@@ -70,5 +106,5 @@ lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
 # print(lua_table_quests_str)
 
 # Write Lua table to file
-with open('ImmersiveQuestReader\Quests.lua', 'w', encoding="utf-8") as file:
+with open('ImmersiveQuestReader/TestQuests.lua', 'w', encoding="utf-8") as file:
     file.write(lua_table_quests_str)
