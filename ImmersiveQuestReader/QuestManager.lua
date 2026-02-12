@@ -74,13 +74,13 @@ function QuestManager:GetQuestTextFromState(quest, state)
     if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> Showing quest " .. quest.name .. " (" .. state .. ")") end;
 
     if state ~= nil and state == "completed" then
-        local objectives = quest.objectives;
-        if objectives.objective.dialog then
-            questText = objectives.objective.dialog.text;
-        elseif objectives.objective[#objectives.objective].dialog.text then
-            questText = objectives.objective[#objectives.objective].dialog.text;
-        elseif objectives.objective[#objectives.objective].dialog[#objectives.objective[#objectives.objective].dialog] then
-            questText = objectives.objective[#objectives.objective].dialog[#objectives.objective[#objectives.objective].dialog].text;
+        local objective = quest.objectives.objective;
+        if objective.dialog then
+            questText = objective.dialog.text;
+        elseif objective[#objective].dialog.text then
+            questText = objective[#objective].dialog.text;
+        elseif objective[#objective].dialog[#objective[#objective].dialog] then
+            questText = objective[#objective].dialog[#objective[#objective].dialog].text;
         else
             questText = "Could not retrieve quest text";
             if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Can't find quest text") end;

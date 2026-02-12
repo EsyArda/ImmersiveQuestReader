@@ -125,8 +125,70 @@ def divide_xml_by_quest_level(root):
         level = int(level) // 10
         if level < 0 or level > 14:
             level = "OTHER"
+        # if level != "OTHER" and level < 6:
         quests_by_level[str(level)].append(quest)
     return dictionary_of_xml_trees(root, quests_by_level)
+
+
+def filter_quests_fields(quests_dictionary):
+    '''Remove any useless information to reduce the Lua table size to avoid a table overflow'''
+    # Fields to keep
+    # - quest.name: quest name
+    # - quest.bestower.npcName: quest giver name
+    # - quest.bestower.text and quest.bestower[1].text: new quest text
+    # - quest.objectives.objective.dialog.text quest.objectives.objective[N].dialog.text quest.objectives.objective[N].dialog[N[N].dialog].text: completed quest text
+    filtered_quests = {'quest': []}
+    for quest in quests_dictionary['quest']:
+        filtered_quest = {
+            'name': quest['name'],
+            'bestower': {
+                'npcName': "",
+                'text': ""
+            },
+            'objectives': {
+                'objective': {
+                    'dialog': {
+                        'text': ""
+                    }
+                }
+            }
+        }
+        if 'bestower' in quest:
+            # Bestower name
+            if isinstance(quest['bestower'], list) and 'npcName' in quest['bestower'][0]:
+                filtered_quest['bestower']['npcName'] = quest['bestower'][0]['npcName']
+            elif 'npcName' in quest['bestower']:
+                filtered_quest['bestower']['npcName'] = quest['bestower']['npcName']
+            else:
+                print(f"⚠ Quest {quest['name']} has no bestower name.")
+
+            # Bestower text
+            if isinstance(quest['bestower'], list) and 'text' in quest['bestower'][0]:
+                filtered_quest['bestower']['text'] = quest['bestower'][0]['text']
+            elif 'text' in quest['bestower']:
+                filtered_quest['bestower']['text'] = quest['bestower']['text']
+            else:
+                print(f"⚠ Quest {quest['name']} has no bestower text.")
+        else:
+            print(f"⚠ Quest {quest['name']} has no bestower.")
+
+        # Quest objective: completed quest text
+        quest_objective = quest['objectives']['objective']
+        if isinstance(quest_objective, dict) and 'text' in quest_objective['dialog']:
+            filtered_quest['objectives']['objective']['dialog']['text'] = quest_objective['dialog']['text']
+        elif isinstance(quest_objective, dict) and isinstance(quest_objective['dialog'], list) and 'text' in quest_objective['dialog'][-1]:
+            filtered_quest['objectives']['objective']['dialog']['text'] = quest_objective['dialog'][-1]['text']
+        elif isinstance(quest_objective, list) and isinstance(quest_objective[-1]['dialog'], dict) and 'text' in quest_objective[-1]['dialog']:
+            filtered_quest['objectives']['objective']['dialog']['text'] = quest_objective[-1]['dialog']['text']
+        elif isinstance(quest_objective, list) and isinstance(quest_objective[-1]['dialog'], list) and 'text' in quest_objective[-1]['dialog'][-1]:
+            filtered_quest['objectives']['objective']['dialog']['text'] = quest_objective[-1]['dialog'][-1]['text']
+        else:
+            filtered_quest['objectives']['objective']['dialog']['text'] = "Quest completed."
+            print(f"⚠ Quest {quest['name']} has no objective text.")
+        
+        filtered_quests['quest'].append(filtered_quest)        
+            
+    return filtered_quests
 
 
 def main():
@@ -140,6 +202,8 @@ def main():
     xml_quests_labeled = replace_key('ImmersiveQuestReader/lotro-data/quests/quests.xml', key_value_dict)
     print(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
 
+    divide= False
+    if divide:
     # Divide the XML into multiple XML trees based on the first letter of the quest name
     # This is essential because LOTRO has a maximum size for Lua tables so we need do divide it into multiple smaller ones.
     # Bonus: it allows a faster search because we only search quests by name.
@@ -158,6 +222,16 @@ def main():
         print(f"✅ Formatted the dictionary into a Lua table as a string for letter {key} in {(time.time() - start):.2f} seconds.")
 
         lua_tables += lua_table_quests_str
+    else:
+        # Convert XML tree to Lua table
+        quests_dictionary = xml_to_dictionary(xml_quests_labeled.getroot())
+        print(f"✅ Converted XML Quests into a dictionary in {(time.time() - start):.2f} seconds.")
+        # Remove any useless information to reduce the Lua table size to avoid a table overflow
+        quests_filtered = filter_quests_fields(quests_dictionary)
+
+        # Format the Lua table as a string
+        lua_table_quests_str = "QUESTS = " + format_lua_table(quests_filtered, beautiful=True)
+        print(f"✅ Formatted the dictionary into a Lua table as a string in {(time.time() - start):.2f} seconds.")
 
     # Write Lua tables to file
     with open(f'ImmersiveQuestReader/QuestDatabase.lua', 'w', encoding="utf-8") as file:

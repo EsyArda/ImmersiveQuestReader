@@ -28,7 +28,7 @@ function QuestWindow:Constructor()
     self:SetText("0 - Quest Name (1/1)");
     self:SetVisible(false); -- Hidden by default
 
-    -- ***** Quest information on the left *****
+    -- ***** QUEST INFORMATION ON THE LEFT *****
     local questInfoWidth = 200;
     local questInfoFontColor = Turbine.UI.Color(0.9,0.9,1);
     self.questInfo = Turbine.UI.Control();
@@ -110,7 +110,7 @@ function QuestWindow:Constructor()
 
 
 
-    -- *** Quest text ***
+    -- *** QUEST TEXT ***
     self.questTextLabel = Turbine.UI.Label();
     self.questTextLabel:SetParent(self);
     self.questTextLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
@@ -150,7 +150,7 @@ function QuestWindow:Constructor()
     end
 
 
-    -- ***** Footer *****
+    -- ***** FOOTER *****
     self.footer = Turbine.UI.Control();
     self.footer:SetParent(self);
     self.footer:SetSize(windowWidth - 2*xMargin, footerHeight);
