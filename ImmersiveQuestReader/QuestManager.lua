@@ -1,53 +1,59 @@
 -- Quest Manager
 
-import "EsyIQR.ImmersiveQuestReader.QuestDatabase"
+-- import "EsyIQR.ImmersiveQuestReader.QuestDatabase"
+require "QuestDatabase"
 
-
-QuestManager = class();
+QuestManager = {}
+QuestManager.__index = QuestManager
 
 function QuestManager:Constructor()
-    self.DEBUG = false;
-    
-    self.quests = QUEST_DATABASE
+   local quest_manager = setmetatable({}, QuestManager)
+
+   quest_manager.DEBUG = true
+   quest_manager.quests = QUEST_DATABASE
+   if quest_manager.DEBUG then console_output("IQR.QuestManager> Constructor") end
+   return quest_manager
 end
 
 function QuestManager:IsNewQuest(chatMessage)
-    if string.find(chatMessage, "New Quest: ") then
-        if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> New quest found") end
-        return true
-    else
-        return false
-    end
+   if string.find(chatMessage, "New Quest: ") then
+      if self.DEBUG then console_output("IQR.QuestManager> New quest found") end
+      return true
+   else
+      return false
+   end
 end
 
 function QuestManager:IsCompletedQuest(chatMessage)
-    if string.find(chatMessage, "Completed:") then
-        return true
-    else
-        return false
-    end
+   if string.find(chatMessage, "Completed:") then
+      return true
+   else
+      return false
+   end
 end
 
 function QuestManager:GetNameFromChatMessageNewQuest(chatMessage)
-    return string.sub(chatMessage, 12);
+   -- Adapt with user language
+   return string.sub(chatMessage, 12);
 end
 
 function QuestManager:GetNameFromChatMessageCompletedQuest(chatMessage)
-    return string.sub(chatMessage, 12);
+   -- Adapt with user language
+   return string.sub(chatMessage, 12);
 end
 
 -- Returns the quest text for a given quest name
 function QuestManager:GetQuestFromName(questName)
-    -- local firstCharacter = string.sub(questName, 1, 1);
-    for _, database in pairs(self.quests) do
-        for _, quest in pairs(database) do
-            if quest.name == questName then
-                if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> Quest found: '" .. quest.name .. "'") end
-                return quest -- Return the quest if the name matches
-            end
-        end
-    end
-    return nil -- Return nil if the quest is not found
+   -- local firstCharacter = string.sub(questName, 1, 1);
+   for _, database in pairs(self.quests) do
+      for _, quest in pairs(database) do
+	 if quest.name == questName then
+	    if self.DEBUG then console_output("IQR.QuestManager> Quest found: '" .. quest.name .. "'") end
+	    return quest -- Return the quest if the name matches
+	 end
+      end
+   end
+   return nil -- Return nil if the quest is not found
 end
 
 -- Add the quest text and state to the quest as _text and _state
@@ -55,48 +61,48 @@ end
 -- @param state: "new" or "completed"
 -- @param questText: the quest text
 function QuestManager:AddQuestStateText(quest, state)
-    if state == "new" or state == "completed" then
-        quest._state = state
-    else
-        quest._state = nil
-    end
-    
-    local questText = self:GetQuestTextFromState(quest, state)
-    if questText then
-        quest._text = questText;
-    end
+   if state == "new" or state == "completed" then
+      quest._state = state
+   else
+      quest._state = nil
+   end
+   
+   local questText = self:GetQuestTextFromState(quest, state)
+   if questText then
+      quest._text = questText;
+   end
 
-    return quest;
+   return quest;
 end
 
 function QuestManager:GetQuestTextFromState(quest, state)
-    local questText = "";
-    if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> Showing quest " .. quest.name .. " (" .. state .. ")") end;
+   local questText = "";
+   if self.DEBUG then console_output("IQR.QuestManager> Showing quest " .. quest.name .. " (" .. state .. ")") end;
 
-    if state ~= nil and state == "completed" then
-        local objective = quest.objectives.objective;
-        if objective.dialog then
-            questText = objective.dialog.text;
-        elseif objective[#objective].dialog.text then
-            questText = objective[#objective].dialog.text;
-        elseif objective[#objective].dialog[#objective[#objective].dialog] then
-            questText = objective[#objective].dialog[#objective[#objective].dialog].text;
-        else
-            questText = "Could not retrieve quest text";
-            if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Can't find quest text") end;
-        end
+   if state ~= nil and state == "completed" then
+      local objectives = quest.objectives;
+      if objectives.objective.dialog then
+	 questText = objectives.objective.dialog.text;
+      elseif objectives.objective[#objectives.objective].dialog.text then
+	 questText = objectives.objective[#objectives.objective].dialog.text;
+      elseif objectives.objective[#objectives.objective].dialog[#objectives.objective[#objectives.objective].dialog] then
+	 questText = objectives.objective[#objectives.objective].dialog[#objectives.objective[#objectives.objective].dialog].text;
+      else
+	 questText = "Could not retrieve quest text";
+	 if self.DEBUG then console_output("IQR.QuestWindow> Can't find quest text") end;
+      end
 
-    elseif state ~= nil and state == "new" then
-        if quest.bestower.text ~= nil and type(quest.bestower.text) == "string" then
-            questText = quest.bestower.text;
-        else
-            questText = quest.bestower[1].text;
-        end
-    else
-        if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Quest state is " .. state) end;
-        questText = "Could not retrieve quest text";
-    end
+   elseif state ~= nil and state == "new" then
+      if quest.bestower.text ~= nil and type(quest.bestower.text) == "string" then
+	 questText = quest.bestower.text;
+      else
+	 questText = quest.bestower[1].text;
+      end
+   else
+      if self.DEBUG then console_output("IQR.QuestWindow> Quest state is " .. state) end;
+      questText = "Could not retrieve quest text";
+   end
    
-    if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestManager> Quest text: " .. questText) end
-    return questText;
+   if self.DEBUG then console_output("IQR.QuestManager> Quest text: " .. questText) end
+   return questText;
 end
