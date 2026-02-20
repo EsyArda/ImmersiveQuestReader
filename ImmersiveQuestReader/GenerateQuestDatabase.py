@@ -133,11 +133,11 @@ def main():
     start = time.time()
 
     # Load key-value from the labels XML file and convert it to a dictionary
-    key_value_dict = extract_key_value_pairs('ImmersiveQuestReader/lotro-data/labels/en/quests.xml')
+    key_value_dict = extract_key_value_pairs('ImmersiveQuestReader/lotro-data/lore/labels/en/quests.xml')
     print(f"✅ Extracted key-value pairs from the labels XML file in {(time.time() - start):.2f} seconds.")
 
     # Replace key strings with their values in the quests XML file
-    xml_quests_labeled = replace_key('ImmersiveQuestReader/lotro-data/quests/quests.xml', key_value_dict)
+    xml_quests_labeled = replace_key('ImmersiveQuestReader/lotro-data/lore/quests.xml', key_value_dict)
     print(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
 
     # Divide the XML into multiple XML trees based on the first letter of the quest name
