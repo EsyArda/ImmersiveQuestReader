@@ -199,8 +199,7 @@ def main():
     print(f"✅ Extracted key-value pairs from the labels XML file in {(time.time() - start):.2f} seconds.")
 
     # Replace key strings with their values in the quests XML file
-    # quests_labeled = replace_key('lotro-data/lore/quests.xml', quests_labels)
-    quests_labeled = replace_key('test.xml', quests_labels)
+    quests_labeled = replace_key('lotro-data/lore/quests.xml', quests_labels)
     print(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
 
     lua_quests_tables = ""
@@ -224,6 +223,7 @@ def main():
         
             lua_quests_tables += lua_quests_tables
     else:
+        divided_xml_trees = {"ALL": quests_labeled.getroot()}
         # Convert XML tree to Lua table
         quests_dictionary = xml_to_dictionary(quests_labeled.getroot())
         print(f"✅ Converted XML Quests into a dictionary in {(time.time() - start):.2f} seconds.")
@@ -232,7 +232,7 @@ def main():
         quests_filtered = quests_dictionary
         
         # Format the Lua table as a string
-        lua_quests_tables = "QUEST_DATABASE = " + format_lua_table(quests_filtered, beautiful=True)
+        lua_quests_tables = "QUESTS_ALL = " + format_lua_table(quests_filtered, beautiful=True)
         print(f"✅ Formatted the dictionary into a Lua table as a string in {(time.time() - start):.2f} seconds.")
 
     # Write Lua tables to file
@@ -242,10 +242,9 @@ def main():
 
         file.write(lua_quests_tables)
 
-        if divide:
-            # Create a table containing all the quest tables
-            lua_database_list = f"QUEST_DATABASE = {{ {', '.join([f'QUESTS_{key}.quest' for key in divided_xml_trees.keys()])} }} \n\n"
-            file.write(lua_database_list)
+        # Create a table containing all the quest tables
+        lua_database_list = f"QUEST_DATABASE = {{ {', '.join([f'QUESTS_{key}.quest' for key in divided_xml_trees.keys()])} }} \n\n"
+        file.write(lua_database_list)
     print(f"✅ Wrote the Lua table to the 'QuestDatabase.lua' file in {(time.time() - start):.2f} seconds.")
         
     # lua_table = xml_to_dict(xml_tree.getroot())
