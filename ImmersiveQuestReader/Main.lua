@@ -10,7 +10,7 @@ if DEBUG_GLOBAL then console_output("\nIQR> Starting Immersive Quest Reader...")
 -- QuestWindow = QuestWindow()
 local quest_manager = QuestManager:Constructor()
 
-local args = { Message = "New Quest: Articles of Discovery" }
+local args = { Message = "New Quest: Adso's Delivery" }
 
 -- Callback when a message is received
 -- New quest
