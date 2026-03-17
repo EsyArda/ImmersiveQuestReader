@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 import time
-import string # To iterate from A to Z
+# import string # To iterate from A to Z
+import logging
+import argparse
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -14,7 +16,7 @@ def extract_key_value_pairs(xml_file):
     return xml_dict
 
 # Function to replace key strings with their values in the xml
-def replace_key(xml_file, key_value_dict):
+def xml_replace_key(xml_file, key_value_dict):
     # Load the quests XML file
     tree = ET.parse(xml_file)
     root = tree.getroot()
@@ -52,7 +54,7 @@ def xml_to_dictionary(element):
     return dictionary
 
 # Function to format Lua table as string
-def format_lua_table(table, indent=0, beautiful = False):
+def format_lua_table(table: dict, indent=0, beautiful=False):
     formatted = "{\n" if beautiful else "{"
     for key, value in table.items():
         # if beautiful:
@@ -91,7 +93,7 @@ def divide_xml_by_quest_name(root):
     # Initialise the dictionary
     quests_by_first_letter = {}
     for letter in string.ascii_uppercase:
-            quests_by_first_letter[letter] = []
+        quests_by_first_letter[letter] = []
     quests_by_first_letter["OTHER"] = []
     
     # Insert quests in the dictionary based on their first letter
@@ -105,15 +107,6 @@ def divide_xml_by_quest_name(root):
         quests_by_first_letter[letter].append(quest)
     return dictionary_of_xml_trees(root, quests_by_first_letter)
 
-# Create a dictionary of XML trees
-def dictionary_of_xml_trees(root, quests_by_key):
-    divided_xml_trees = {}
-    for letter, quests in quests_by_key.items():
-        divided_xml_trees[letter] = ET.ElementTree(ET.Element(root.tag))
-        for quest in quests:
-            divided_xml_trees[letter].getroot().append(quest)
-    
-    return divided_xml_trees
 
 def divide_xml_by_quest_level(root):
     quests_by_level = {}
@@ -128,6 +121,17 @@ def divide_xml_by_quest_level(root):
         # if level != "OTHER" and level < 6:
         quests_by_level[str(level)].append(quest)
     return dictionary_of_xml_trees(root, quests_by_level)
+
+
+# Create a dictionary of XML trees
+def dictionary_of_xml_trees(root, quests_by_key):
+    divided_xml_trees = {}
+    for letter, quests in quests_by_key.items():
+        divided_xml_trees[letter] = ET.ElementTree(ET.Element(root.tag))
+        for quest in quests:
+            divided_xml_trees[letter].getroot().append(quest)
+    
+    return divided_xml_trees
 
 
 def filter_quests_fields(quests_dictionary):
@@ -160,7 +164,7 @@ def filter_quests_fields(quests_dictionary):
             elif 'npcName' in quest['bestower']:
                 filtered_quest['bestower']['npcName'] = quest['bestower']['npcName']
             else:
-                print(f"⚠ Quest {quest['name']} has no bestower name.")
+                logging.warning(f"⚠ Quest {quest['name']} has no bestower name.")
 
             # Bestower text
             if isinstance(quest['bestower'], list) and 'text' in quest['bestower'][0]:
@@ -168,9 +172,9 @@ def filter_quests_fields(quests_dictionary):
             elif 'text' in quest['bestower']:
                 filtered_quest['bestower']['text'] = quest['bestower']['text']
             else:
-                print(f"⚠ Quest {quest['name']} has no bestower text.")
+                logging.warning(f"⚠ Quest {quest['name']} has no bestower text.")
         else:
-            print(f"⚠ Quest {quest['name']} has no bestower.")
+            logging.warning(f"⚠ Quest {quest['name']} has no bestower.")
 
         # Quest objective: completed quest text
         quest_objective = quest['objectives']['objective']
@@ -184,56 +188,99 @@ def filter_quests_fields(quests_dictionary):
             filtered_quest['objectives']['objective']['dialog']['text'] = quest_objective[-1]['dialog'][-1]['text']
         else:
             filtered_quest['objectives']['objective']['dialog']['text'] = "Quest completed."
-            print(f"⚠ Quest {quest['name']} has no objective text.")
+            logging.warning(f"⚠ Quest {quest['name']} has no objective text.")
         
         filtered_quests['quest'].append(filtered_quest)        
             
     return filtered_quests
 
 
-def main():
+def quests_by_initial(quests: dict) -> dict:
+    """
+    Return a dictionary of the form: { "A": [{quest1}, {quest2}, …],
+                                       "B": [{quest3}, {quest4}, …],
+                                       …
+                                       "OTHER": [{quest5}, {quest6}, …]}
+    """
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    quests_by_name = {}
+    for letter in letters:
+        quests_by_name[letter] = []
+    quests_by_name["OTHER"] = []
+    for quest in quests["quest"]:
+        first_letter = quest["rawName"][0].upper()
+        if first_letter in letters:
+            quests_by_name[first_letter].append(quest)
+        else:
+            quests_by_name["OTHER"].append(quest)
+    return quests_by_name
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generate the quest databases Lua tables")
+    parser.add_argument("-d", "--debug", action="store_true", default=False, help="enable debug logging (default to info)")
+    args = parser.parse_args()
+    
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+    
     start = time.time()
-
     # Load key-value from the labels XML file and convert it to a dictionary
-    quests_labels = extract_key_value_pairs('lotro-data/lore/labels/en/quests.xml')
-    print(f"✅ Extracted key-value pairs from the labels XML file in {(time.time() - start):.2f} seconds.")
+    quests_labels_xml = extract_key_value_pairs('lotro-data/lore/labels/en/quests.xml')
+    logging.info(f"✅ Extracted quests text labels {(time.time() - start):.2f} seconds.")
 
+    start = time.time()
     # Replace key strings with their values in the quests XML file
-    quests_labeled = replace_key('lotro-data/lore/quests.xml', quests_labels)
-    print(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
+    # quests_labeled_xml = replace_key('lotro-data/lore/quests.xml', quests_labels_xml)
+    quests_labeled_xml = xml_replace_key('./test_quests.xml', quests_labels_xml)
+    logging.info(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
+    
+    start = time.time()
+    quests_labeled = xml_to_dictionary(quests_labeled_xml.getroot())
+    quests_by_initial = quests_by_initial(quests_labeled)
+    logging.info(f"✅ Grouped quests by first letter of name in {(time.time() - start):.2f} seconds.")
+    
+    start = time.time()
+    for letter, quest_list in quests_by_initial.items():
+        with open(f'QuestDatabase-{letter}.lua', 'w', encoding="utf-8") as file:
+            file.write(f"QUESTS_{letter} = " + format_lua_table(quest_list, beautiful=True))
+        logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")
 
-    lua_quests_tables = ""
 
-    divide= False
+    exit(0)
+
+
+
+
+    
+    divide= True
     if divide:
         # Divide the XML into multiple XML trees based on the first letter of the quest name
         # This is essential because LOTRO has a maximum size for Lua tables so we need do divide it into multiple smaller ones.
         # Bonus: it allows a faster search because we only search quests by name.
-        divided_xml_trees = divide_xml_by_quest_name(quests_labeled.getroot())
-        print(f"✅ Divided the XML data into smaller XML trees in {(time.time() - start):.2f} seconds.")
+        divided_xml_trees = divide_xml_by_quest_name(quests_labeled_xml.getroot())
+        logging.info(f"✅ Divided the XML data into smaller XML trees in {(time.time() - start):.2f} seconds.")
 
         # Convert XML trees to Lua tables
         for key, xml_tree in divided_xml_trees.items():
             quests_dictionary = xml_to_dictionary(xml_tree.getroot())
-            print(f"✅ Converted XML Quests {key} into a dictionary in {(time.time() - start):.2f} seconds.")
+            logging.info(f"✅ Converted XML Quests {key} into a dictionary in {(time.time() - start):.2f} seconds.")
             
             # Format the Lua table as a string
             lua_quests_tables = f"QUESTS_{key} = " + format_lua_table(quests_dictionary, beautiful=True)
-            print(f"✅ Formatted the dictionary into a Lua table as a string for letter {key} in {(time.time() - start):.2f} seconds.")
+            logging.info(f"✅ Formatted the dictionary into a Lua table as a string for letter {key} in {(time.time() - start):.2f} seconds.")
         
             lua_quests_tables += lua_quests_tables
     else:
-        divided_xml_trees = {"ALL": quests_labeled.getroot()}
+        divided_xml_trees = {"ALL": quests_labeled_xml.getroot()}
         # Convert XML tree to Lua table
-        quests_dictionary = xml_to_dictionary(quests_labeled.getroot())
-        print(f"✅ Converted XML Quests into a dictionary in {(time.time() - start):.2f} seconds.")
+        quests_dictionary = xml_to_dictionary(quests_labeled_xml.getroot())
+        logging.info(f"✅ Converted XML Quests into a dictionary in {(time.time() - start):.2f} seconds.")
         # Remove any useless information to reduce the Lua table size to avoid a table overflow
         # quests_filtered = filter_quests_fields(quests_dictionary)
         quests_filtered = quests_dictionary
         
         # Format the Lua table as a string
         lua_quests_tables = "QUESTS_ALL = " + format_lua_table(quests_filtered, beautiful=True)
-        print(f"✅ Formatted the dictionary into a Lua table as a string in {(time.time() - start):.2f} seconds.")
+        logging.info(f"✅ Formatted the dictionary into a Lua table as a string in {(time.time() - start):.2f} seconds.")
 
     # Write Lua tables to file
     with open(f'QuestDatabase.lua', 'w', encoding="utf-8") as file:
@@ -245,22 +292,19 @@ def main():
         # Create a table containing all the quest tables
         lua_database_list = f"QUEST_DATABASE = {{ {', '.join([f'QUESTS_{key}.quest' for key in divided_xml_trees.keys()])} }} \n\n"
         file.write(lua_database_list)
-    print(f"✅ Wrote the Lua table to the 'QuestDatabase.lua' file in {(time.time() - start):.2f} seconds.")
+    logging.info(f"✅ Wrote the Lua table to the 'QuestDatabase.lua' file in {(time.time() - start):.2f} seconds.")
         
     # lua_table = xml_to_dict(xml_tree.getroot())
-    # print("Converted XML to Lua table.")
+    # logging.info("Converted XML to Lua table.")
     # 
     # # Format the Lua table as a string
     # lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
-    # print("Formatted the Lua table as a string.")
+    # logging.info("Formatted the Lua table as a string.")
     # 
     # # Output the Lua table
-    # # print(lua_table_quests_str)
+    # # logging.info(lua_table_quests_str)
     # 
     # # Write Lua table to file
     # with open('ImmersiveQuestReader/QuestDatabase.lua', 'w', encoding="utf-8") as file:
     #     file.write(lua_table_quests_str)
-    # print("Wrote the Lua table to the 'QuestDatabase.lua' file.")
-
-if __name__ == "__main__":
-    main()
+    # logging.info("Wrote the Lua table to the 'QuestDatabase.lua' file.")
