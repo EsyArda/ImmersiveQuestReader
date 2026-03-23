@@ -3,6 +3,7 @@ import time
 # import string # To iterate from A to Z
 import logging
 import argparse
+import luadata
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -72,7 +73,7 @@ def format_lua_table(table: dict, indent=0, beautiful=False):
     return formatted
 
 # Function to format Lua table lists as string
-def format_lua_table_list(list, indent, beautiful):
+def format_lua_table_list(list, indent=0, beautiful=False):
     formatted = "{\n" if beautiful else "{"
     for item in list:
         # formatted += "\t" * (indent + 1) # Indentation for readability
@@ -85,42 +86,6 @@ def format_lua_table_list(list, indent, beautiful):
     formatted += "}"
 
     return formatted
-
-
-# Function to divide the XML into multiple XML trees based on the first letter of the quest name
-# Returns a dictionary with dict[LETTER] -> XML tree
-def divide_xml_by_quest_name(root):
-    # Initialise the dictionary
-    quests_by_first_letter = {}
-    for letter in string.ascii_uppercase:
-        quests_by_first_letter[letter] = []
-    quests_by_first_letter["OTHER"] = []
-    
-    # Insert quests in the dictionary based on their first letter
-    for quest in root.findall('quest'):
-        name = quest.get('name')
-        letter = name[0].upper()
-        if letter < 'A' or letter > 'Z':
-            # Regroup quests starting with numbers or non ASCII letters in a table
-            letter = "OTHER"
-        # if letter == 'A' or letter == 'B': # TODO : Remove this line, just for testing
-        quests_by_first_letter[letter].append(quest)
-    return dictionary_of_xml_trees(root, quests_by_first_letter)
-
-
-def divide_xml_by_quest_level(root):
-    quests_by_level = {}
-    for number in range(0, 15):
-        quests_by_level[str(number)] = []
-    quests_by_level["OTHER"] = []
-    for quest in root.findall('quest'):
-        level = quest.get('level')
-        level = int(level) // 10
-        if level < 0 or level > 14:
-            level = "OTHER"
-        # if level != "OTHER" and level < 6:
-        quests_by_level[str(level)].append(quest)
-    return dictionary_of_xml_trees(root, quests_by_level)
 
 
 # Create a dictionary of XML trees
@@ -241,70 +206,5 @@ if __name__ == "__main__":
     start = time.time()
     for letter, quest_list in quests_by_initial.items():
         with open(f'QuestDatabase-{letter}.lua', 'w', encoding="utf-8") as file:
-            file.write(f"QUESTS_{letter} = " + format_lua_table(quest_list, beautiful=True))
-        logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")
-
-
-    exit(0)
-
-
-
-
-    
-    divide= True
-    if divide:
-        # Divide the XML into multiple XML trees based on the first letter of the quest name
-        # This is essential because LOTRO has a maximum size for Lua tables so we need do divide it into multiple smaller ones.
-        # Bonus: it allows a faster search because we only search quests by name.
-        divided_xml_trees = divide_xml_by_quest_name(quests_labeled_xml.getroot())
-        logging.info(f"✅ Divided the XML data into smaller XML trees in {(time.time() - start):.2f} seconds.")
-
-        # Convert XML trees to Lua tables
-        for key, xml_tree in divided_xml_trees.items():
-            quests_dictionary = xml_to_dictionary(xml_tree.getroot())
-            logging.info(f"✅ Converted XML Quests {key} into a dictionary in {(time.time() - start):.2f} seconds.")
-            
-            # Format the Lua table as a string
-            lua_quests_tables = f"QUESTS_{key} = " + format_lua_table(quests_dictionary, beautiful=True)
-            logging.info(f"✅ Formatted the dictionary into a Lua table as a string for letter {key} in {(time.time() - start):.2f} seconds.")
-        
-            lua_quests_tables += lua_quests_tables
-    else:
-        divided_xml_trees = {"ALL": quests_labeled_xml.getroot()}
-        # Convert XML tree to Lua table
-        quests_dictionary = xml_to_dictionary(quests_labeled_xml.getroot())
-        logging.info(f"✅ Converted XML Quests into a dictionary in {(time.time() - start):.2f} seconds.")
-        # Remove any useless information to reduce the Lua table size to avoid a table overflow
-        # quests_filtered = filter_quests_fields(quests_dictionary)
-        quests_filtered = quests_dictionary
-        
-        # Format the Lua table as a string
-        lua_quests_tables = "QUESTS_ALL = " + format_lua_table(quests_filtered, beautiful=True)
-        logging.info(f"✅ Formatted the dictionary into a Lua table as a string in {(time.time() - start):.2f} seconds.")
-
-    # Write Lua tables to file
-    with open(f'QuestDatabase.lua', 'w', encoding="utf-8") as file:
-        lua_comment = "-- This file contains all the quests in the game, divided by the first letter of their name.\n-- It is necessary to divide the quests into multiple files because LOTRO has a maximum size for Lua tables.\n"
-        file.write(lua_comment)
-
-        file.write(lua_quests_tables)
-
-        # Create a table containing all the quest tables
-        lua_database_list = f"QUEST_DATABASE = {{ {', '.join([f'QUESTS_{key}.quest' for key in divided_xml_trees.keys()])} }} \n\n"
-        file.write(lua_database_list)
-    logging.info(f"✅ Wrote the Lua table to the 'QuestDatabase.lua' file in {(time.time() - start):.2f} seconds.")
-        
-    # lua_table = xml_to_dict(xml_tree.getroot())
-    # logging.info("Converted XML to Lua table.")
-    # 
-    # # Format the Lua table as a string
-    # lua_table_quests_str = "QUESTS = " + format_lua_table(lua_table)
-    # logging.info("Formatted the Lua table as a string.")
-    # 
-    # # Output the Lua table
-    # # logging.info(lua_table_quests_str)
-    # 
-    # # Write Lua table to file
-    # with open('ImmersiveQuestReader/QuestDatabase.lua', 'w', encoding="utf-8") as file:
-    #     file.write(lua_table_quests_str)
-    # logging.info("Wrote the Lua table to the 'QuestDatabase.lua' file.")
+            file.write(f"QUESTS_{letter} = " + luadata.serialize(quest_list, indent=" "))
+    logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")
