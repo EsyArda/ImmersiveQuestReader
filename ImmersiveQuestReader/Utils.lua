@@ -54,7 +54,7 @@ end
 
 
 -- Outputs message to console (either LOTRO chat or lua console)
-function console_output(message)
+function ConsoleOutput(message)
     if Turbine then Turbine.Shell.WriteLine(message)
     else print(message) end
 end
