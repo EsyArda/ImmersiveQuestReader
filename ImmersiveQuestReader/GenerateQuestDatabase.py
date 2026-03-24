@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 import time
-# import string # To iterate from A to Z
 import logging
 import argparse
 import luadata
@@ -54,60 +53,18 @@ def xml_to_dictionary(element):
 
     return dictionary
 
-# Function to format Lua table as string
-def format_lua_table(table: dict, indent=0, beautiful=False):
-    formatted = "{\n" if beautiful else "{"
-    for key, value in table.items():
-        # if beautiful:
-        #     formatted += "\t" * (indent + 1)
-        if isinstance(value, dict):
-            formatted += f"{key} = {format_lua_table(value, indent + 1, beautiful)}"
-        elif isinstance(value, list):
-            formatted += f"{key} = {format_lua_table_list(value, indent + 1, beautiful)}"
-        else:
-            formatted += f"{key} = {repr(value)}"
-        formatted += ",\n" if beautiful else ","
-    # formatted += "\t" * indent + "}" # for better readability
-    formatted += "}"
 
-    return formatted
-
-# Function to format Lua table lists as string
-def format_lua_table_list(list, indent=0, beautiful=False):
-    formatted = "{\n" if beautiful else "{"
-    for item in list:
-        # formatted += "\t" * (indent + 1) # Indentation for readability
-        if isinstance(item, dict):
-            formatted += format_lua_table(item, indent + 1)
-        else:
-            formatted += repr(item)
-        formatted += ",\n" if beautiful else ","
-    # formatted += "\t" * indent + "}" # Indentation for readability
-    formatted += "}"
-
-    return formatted
-
-
-# Create a dictionary of XML trees
-def dictionary_of_xml_trees(root, quests_by_key):
-    divided_xml_trees = {}
-    for letter, quests in quests_by_key.items():
-        divided_xml_trees[letter] = ET.ElementTree(ET.Element(root.tag))
-        for quest in quests:
-            divided_xml_trees[letter].getroot().append(quest)
-    
-    return divided_xml_trees
-
-
-def filter_quests_fields(quests_dictionary):
-    '''Remove any useless information to reduce the Lua table size to avoid a table overflow'''
-    # Fields to keep
-    # - quest.name: quest name
-    # - quest.bestower.npcName: quest giver name
-    # - quest.bestower.text and quest.bestower[1].text: new quest text
-    # - quest.objectives.objective.dialog.text quest.objectives.objective[N].dialog.text quest.objectives.objective[N].dialog[N[N].dialog].text: completed quest text
+def filter_quests_fields(quests: dict):
+    '''
+    Keep only relevant fields from QUESTS to reduce the Lua table size to avoid a table overflow
+    Fields to keep:
+      - quest.name: quest name
+      - quest.bestower.npcName: quest giver name
+      - quest.bestower.text and quest.bestower[1].text: new quest text
+      - quest.objectives.objective.dialog.text quest.objectives.objective[N].dialog.text quest.objectives.objective[N].dialog[N[N].dialog].text: completed quest text
+    '''
     filtered_quests = {'quest': []}
-    for quest in quests_dictionary['quest']:
+    for quest in quests['quest']:
         filtered_quest = {
             'name': quest['name'],
             'bestower': {
@@ -162,10 +119,12 @@ def filter_quests_fields(quests_dictionary):
 
 def quests_by_initial(quests: dict) -> dict:
     """
-    Return a dictionary of the form: { "A": [{quest1}, {quest2}, …],
-                                       "B": [{quest3}, {quest4}, …],
-                                       …
-                                       "OTHER": [{quest5}, {quest6}, …]}
+    Return a dictionary letter -> list of quests based on the first letter of raw_nme from QUESTS dict
+    Example return value:
+    { "A": [{quest1}, {quest2}, …],
+      "B": [{quest3}, {quest4}, …],
+      …
+      "OTHER": [{quest5}, {quest6}, …]}
     """
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     quests_by_name = {}
@@ -194,8 +153,7 @@ if __name__ == "__main__":
 
     start = time.time()
     # Replace key strings with their values in the quests XML file
-    # quests_labeled_xml = replace_key('lotro-data/lore/quests.xml', quests_labels_xml)
-    quests_labeled_xml = xml_replace_key('./test_quests.xml', quests_labels_xml)
+    quests_labeled_xml = xml_replace_key('lotro-data/lore/quests.xml', quests_labels_xml)
     logging.info(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
     
     start = time.time()
