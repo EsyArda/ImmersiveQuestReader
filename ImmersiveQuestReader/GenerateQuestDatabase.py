@@ -165,6 +165,6 @@ if __name__ == "__main__":
     
     start = time.time()
     for letter, quest_list in quests_by_initial.items():
-        with open(f'QuestDatabase-{letter}.lua', 'w', encoding="utf-8") as file:
-            file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests(); return QUESTS_{letter}; end;")
+        with open(f'QuestDatabase_{letter}.lua', 'w', encoding="utf-8") as file:
+            file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests() return QUESTS_{letter}; end;")
     logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")

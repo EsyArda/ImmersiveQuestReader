@@ -1,7 +1,14 @@
 -- Quest Manager
 
 -- import "EsyIQR.ImmersiveQuestReader.QuestDatabase"
-require "QuestDatabase"
+
+-- function ImportRequire(module)
+--    if Turbine then
+--       return import("EsyIQR.ImmersiveQuestReader." .. module)
+--    else
+--       return require(module)
+--    end
+-- end
 
 QuestManager = {}
 QuestManager.__index = QuestManager
@@ -46,9 +53,9 @@ end
 function QuestManager:GetQuest(questName)
    local firstCharacter = string.upper(string.sub(questName, 1, 1));
    if string.find("ABCDEFGHIJKLMNOPQRSTUVWXYZ", firstCharacter, 1, true) then
-      ImportRequire("QuestDatabase-" .. firstCharacter)
+      ImportRequire("QuestDatabase_" .. firstCharacter)
    else
-      ImportRequire("QuestDatabase-OTHER")
+      ImportRequire("QuestDatabase_OTHER")
    end
    for _, quest in pairs(GetDatabaseQuests()) do
       if quest.name == questName then
