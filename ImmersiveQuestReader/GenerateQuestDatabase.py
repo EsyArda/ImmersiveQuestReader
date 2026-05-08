@@ -5,6 +5,7 @@ import time
 import logging
 import argparse
 import luadata
+import pathlib
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -162,7 +163,8 @@ if __name__ == "__main__":
     quests_labeled = xml_to_dictionary(quests_labeled_xml.getroot())
     quests_by_initial = quests_by_initial(quests_labeled)
     logging.info(f"✅ Grouped quests by first letter of name in {(time.time() - start):.2f} seconds.")
-    
+
+    pathlib.Path("QuestDatabases").mkdir(exist_ok=True)
     start = time.time()
     for letter, quest_list in quests_by_initial.items():
         with open(f'QuestDatabases/QuestDatabase_{letter}.lua', 'w', encoding="utf-8") as file:
