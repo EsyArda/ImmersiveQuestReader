@@ -1,5 +1,5 @@
--- import "EsyIQR.ImmersiveQuestReader.QuestWindow"
--- import "EsyIQR.ImmersiveQuestReader.QuestManager"
+-- TODO
+-- __init__.lua avec Utils puis Main
 
 function ImportRequire(module)
    if Turbine then
@@ -12,22 +12,28 @@ end
 ImportRequire("Utils")
 ImportRequire("QuestManager")
 ImportRequire("QuestWindow")
+import "Turbine.UI"
 
 local DEBUG_GLOBAL = true
 
 if DEBUG_GLOBAL then LogMessage("\nIQR> Starting Immersive Quest Reader...") end
 
-QuestWindow = QuestWindow()
+-- Initalize components
 local quest_manager = QuestManager:Constructor(DEBUG_GLOBAL)
+local screen_width, screen_height = Turbine.UI.Display.GetSize();
+local quest_window = QuestWindow:Constructor(DEBUG_GLOBAL, 1,  1)
+--
+
 
 local function questChatReceived (message)
+   quest_window:Test()
    -- New quest
    if quest_manager:IsNewQuest(message) then
       local questName = quest_manager:GetNameFromChatMessageNewQuest(message)
       local quest = quest_manager:GetQuest(questName)
       if quest ~= nil then
 	 quest_manager:AddQuestStateText(quest, "new");
-	 QuestWindow:EnqueueQuest(quest);
+	 -- QuestWindow:EnqueueQuest(quest);
       end
 
       -- Completed quest
@@ -37,14 +43,13 @@ local function questChatReceived (message)
       local quest = quest_manager:GetQuest(questName)
       if quest ~= nil then
 	 quest = quest_manager:AddQuestStateText(quest, "completed");
-	 QuestWindow:EnqueueQuest(quest);
+	 -- QuestWindow:EnqueueQuest(quest);
 	 if DEBUG_GLOBAL then LogMessage("IQR> Enqueued " .. quest.name) end
       else
 	 if DEBUG_GLOBAL then LogMessage("IQR> Quest not found: " .. questName) end
       end
    end
 end
-
 
 -- Callback when a message is received
 Turbine.Chat.Received = function (sender, args)
