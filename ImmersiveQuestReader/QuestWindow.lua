@@ -19,7 +19,7 @@ function QuestWindow:Constructor()
     local topMargin = 40;
 
     self:SetSize(windowWidth, windowHeight);
-    
+
     local screenWidth, screenHeight = Turbine.UI.Display.GetSize();
     local x = (screenWidth - windowWidth) / 2;
     local y = (screenHeight - windowHeight) / 2;
@@ -28,7 +28,7 @@ function QuestWindow:Constructor()
     self:SetText("0 - Quest Name (1/1)");
     self:SetVisible(false); -- Hidden by default
 
-    -- ***** Quest information on the left *****
+    -- ***** QUEST INFORMATION ON THE LEFT *****
     local questInfoWidth = 200;
     local questInfoFontColor = Turbine.UI.Color(0.9,0.9,1);
     self.questInfo = Turbine.UI.Control();
@@ -37,7 +37,7 @@ function QuestWindow:Constructor()
     self.questInfo:SetPosition(xMargin, topMargin);
     if self.DEBUG then self.questInfo:SetBackColor(Turbine.UI.Color(0.74,0.29,0.29,0.11)) end;
     self.questInfo:SetVisible(true);
-    
+
     -- Experience
     self.xpLabel = Turbine.UI.Label();
     self.xpLabel:SetParent(self.questInfo);
@@ -110,7 +110,7 @@ function QuestWindow:Constructor()
 
 
 
-    -- *** Quest text ***
+    -- *** QUEST TEXT ***
     self.questTextLabel = Turbine.UI.Label();
     self.questTextLabel:SetParent(self);
     self.questTextLabel:SetSize(windowWidth - self.questInfo:GetLeft() - self.questInfo:GetWidth() - 2*xMargin, windowHeight - footerHeight - topMargin - 2*yMargin);
@@ -146,11 +146,11 @@ function QuestWindow:Constructor()
             self.questPages = {};
             self.currentPage = 1;
             self:ShowNextQuestInQueueIfExists();
-        end    
+        end
     end
 
 
-    -- ***** Footer *****
+    -- ***** FOOTER *****
     self.footer = Turbine.UI.Control();
     self.footer:SetParent(self);
     self.footer:SetSize(windowWidth - 2*xMargin, footerHeight);
@@ -251,7 +251,7 @@ end
 
 function QuestWindow:UpdateFooterText()
     self.pageNumber:SetText(self.quest.name .. " - " .. self.currentPage .. "/" .. #self.questPages);
-    if self.quest.bestower then
+    if self.quest.bestower and self.quest.bestower.npcName then
         self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
     else
         self.npcLabel:SetText("");
@@ -282,9 +282,9 @@ function QuestWindow:UpdateInfo()
     end;
     if self.quest.rewards.selectOneOf and self.quest.rewards.selectOneOf.object then
         -- if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Choice Rewards") end;
-        self:AddItemsToControl(self.quest.rewards.selectOneOf.object, self.itemChoiceControl) 
+       self:AddItemsToControl(self.quest.rewards.selectOneOf.object, self.itemChoiceControl) 
     end;
-        
+    
 end
 
 function QuestWindow:UpdateWindow()
@@ -293,7 +293,7 @@ function QuestWindow:UpdateWindow()
     self:UpdateFooterText();
     self:UpdateInfo();
 end
-    
+
 
 function QuestWindow:AddItemsToControl(items, control)
     -- Loop through all quest rewards

@@ -51,3 +51,10 @@ function TO_HEX(IN)
 	if string.len(OUT) == 1 then OUT = "0" .. OUT end;
 	return OUT
 end
+
+
+-- Outputs message to console (either LOTRO chat or lua console)
+function LogMessage(message)
+   if Turbine then Turbine.Shell.WriteLine(message)
+   else print(message) end
+end

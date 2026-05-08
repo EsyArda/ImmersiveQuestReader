@@ -1,45 +1,62 @@
-import "Turbine";
-import "EsyIQR.ImmersiveQuestReader.QuestWindow"
-import "EsyIQR.ImmersiveQuestReader.QuestManager"
+-- import "EsyIQR.ImmersiveQuestReader.QuestWindow"
+-- import "EsyIQR.ImmersiveQuestReader.QuestManager"
 
-local DEBUG_GLOBAL = false
+function ImportRequire(module)
+   if Turbine then
+      return import("EsyIQR.ImmersiveQuestReader." .. module)
+   else
+      return require(module)
+   end
+end
 
-if DEBUG_GLOBAL then Turbine.Shell.WriteLine("\nIQR> Starting Immersive Quest Reader...") end
+ImportRequire("Utils")
+ImportRequire("QuestManager")
+ImportRequire("QuestWindow")
+
+local DEBUG_GLOBAL = true
+
+if DEBUG_GLOBAL then LogMessage("\nIQR> Starting Immersive Quest Reader...") end
 
 QuestWindow = QuestWindow()
-QuestManager = QuestManager()
+local quest_manager = QuestManager:Constructor(DEBUG_GLOBAL)
+
+local function questChatReceived (message)
+   -- New quest
+   if quest_manager:IsNewQuest(message) then
+      local questName = quest_manager:GetNameFromChatMessageNewQuest(message)
+      local quest = quest_manager:GetQuest(questName)
+      if quest ~= nil then
+	 quest_manager:AddQuestStateText(quest, "new");
+	 QuestWindow:EnqueueQuest(quest);
+      end
+
+      -- Completed quest
+   elseif quest_manager:IsCompletedQuest(message) then
+      local questName = quest_manager:GetNameFromChatMessageCompletedQuest(message)
+      if DEBUG_GLOBAL then LogMessage("IQR> Completed '" .. questName .. "'") end
+      local quest = quest_manager:GetQuest(questName)
+      if quest ~= nil then
+	 quest = quest_manager:AddQuestStateText(quest, "completed");
+	 QuestWindow:EnqueueQuest(quest);
+	 if DEBUG_GLOBAL then LogMessage("IQR> Enqueued " .. quest.name) end
+      else
+	 if DEBUG_GLOBAL then LogMessage("IQR> Quest not found: " .. questName) end
+      end
+   end
+end
 
 
 -- Callback when a message is received
 Turbine.Chat.Received = function (sender, args)
-    if (args.ChatType == Turbine.ChatType.Quest) or (args.ChatType == Turbine.ChatType.Standard) then
-
-        -- New quest
-        if QuestManager:IsNewQuest(args.Message) then
-            local questName = QuestManager:GetNameFromChatMessageNewQuest(args.Message)
-            local quest = QuestManager:GetQuestFromName(questName)
-            if quest ~= nil then
-                QuestManager:AddQuestStateText(quest, "new");
-                QuestWindow:EnqueueQuest(quest);
-            end
-
-        -- Completed quest
-        elseif QuestManager:IsCompletedQuest(args.Message) then
-            local questName = QuestManager:GetNameFromChatMessageCompletedQuest(args.Message)
-            if DEBUG_GLOBAL then Turbine.Shell.WriteLine("IQR> Completed '" .. questName .. "'") end
-            local quest = QuestManager:GetQuestFromName(questName)
-            if quest ~= nil then
-                quest = QuestManager:AddQuestStateText(quest, "completed");
-                QuestWindow:EnqueueQuest(quest);
-                if DEBUG_GLOBAL then Turbine.Shell.WriteLine("IQR> Enqueued " .. quest.name) end
-            else
-                if DEBUG_GLOBAL then Turbine.Shell.WriteLine("IQR> Quest not found: " .. questName) end
-            end
-        end
-
-    end
+   if (args.ChatType == Turbine.ChatType.Quest) or (args.ChatType == Turbine.ChatType.Standard)
+   then
+      questChatReceived(args.Message)
+   end
 end
 
 
--- Turbine.Shell.WriteLine("New Quest: The Keeper Garthamendir")
--- Turbine.Shell.WriteLine("Completed:\nCanvas of Defiance")
+-- LogMessage("New Quest: The Keeper Garthamendir")
+-- LogMessage("New Quest: Zidir-nesad: The Jewel of Adnâkh")
+-- LogMessage("Completed:\nCanvas of Defiance")
+-- LogMessage("Completed:\nGifts -- A Delicate Bracelet\n")
+-- quest_manager:GetQuest("Gifts -- A Delicate Bracelet")
