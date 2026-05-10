@@ -58,3 +58,7 @@ function LogMessage(message)
    if Turbine then Turbine.Shell.WriteLine(message)
    else print(message) end
 end
+
+function StripWhitespace (str)
+   return str:match("^%s*(.-)%s*$")
+end

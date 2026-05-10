@@ -30,12 +30,12 @@ end
 
 function QuestManager:GetNameFromChatMessageNewQuest(chatMessage)
    -- Adapt with user language
-   return string.sub(chatMessage, 12);
+   return StripWhitespace(string.sub(chatMessage, 12));
 end
 
 function QuestManager:GetNameFromChatMessageCompletedQuest(chatMessage)
    -- Adapt with user language
-   return string.sub(chatMessage, 12, -2);
+   return StripWhitespace(string.sub(chatMessage, 12));
 end
 
 -- Returns the quest text for a given quest name
