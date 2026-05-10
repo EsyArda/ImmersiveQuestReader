@@ -33,7 +33,7 @@ local function questChatReceived (message)
       local quest = quest_manager:GetQuest(questName)
       if quest ~= nil then
 	 quest_manager:AddQuestStateText(quest, "new");
-	 -- QuestWindow:EnqueueQuest(quest);
+	 quest_window:EnqueueQuest(quest);
       end
 
       -- Completed quest
@@ -43,7 +43,7 @@ local function questChatReceived (message)
       local quest = quest_manager:GetQuest(questName)
       if quest ~= nil then
 	 quest = quest_manager:AddQuestStateText(quest, "completed");
-	 -- QuestWindow:EnqueueQuest(quest);
+	 quest_window:EnqueueQuest(quest);
 	 if DEBUG_GLOBAL then LogMessage("IQR> Enqueued " .. quest.name) end
       else
 	 if DEBUG_GLOBAL then LogMessage("IQR> Quest not found: " .. questName) end
