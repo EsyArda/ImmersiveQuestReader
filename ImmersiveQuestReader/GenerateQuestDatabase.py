@@ -143,6 +143,7 @@ def quests_by_initial(quests: dict) -> dict:
     return quests_by_name
 
 if __name__ == "__main__":
+    # TODO reorganize quests fields
     parser = argparse.ArgumentParser(description="generate the quest databases Lua tables")
     parser.add_argument("-d", "--debug", action="store_true", default=False, help="enable debug logging (default to info)")
     args = parser.parse_args()

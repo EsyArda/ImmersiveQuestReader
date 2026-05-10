@@ -1,5 +1,4 @@
--- TODO
--- __init__.lua avec Utils puis Main
+-- TODO __init__.lua avec Utils puis Main
 
 function ImportRequire(module)
    if Turbine then
@@ -26,7 +25,6 @@ local quest_window = QuestWindow:Constructor(DEBUG_GLOBAL, 1,  1)
 
 
 local function questChatReceived (message)
-   quest_window:Test()
    -- New quest
    if quest_manager:IsNewQuest(message) then
       local questName = quest_manager:GetNameFromChatMessageNewQuest(message)
