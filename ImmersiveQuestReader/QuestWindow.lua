@@ -14,7 +14,9 @@ function QuestWindow:Constructor(debug, x_pos, y_pos)
    local quest_window = setmetatable({}, QuestWindow)
    
    quest_window.debug = debug
-
+   quest_window.ui_visible = true
+   quest_window.should_be_visible = false
+   
    quest_window.window = Turbine.UI.Lotro.Window()
    local windowWidth = 800;
    local windowHeight = 300;
@@ -46,9 +48,12 @@ function QuestWindow:Constructor(debug, x_pos, y_pos)
    quest_window.window:SetWantsKeyEvents(true);
    quest_window.window.KeyDown = function(sender, args)
       if (args.Action == Turbine.UI.Lotro.Action.Escape) then
-	 quest_window.window:SetVisible(false);
+	 quest_window.ui_visible = true
+	 quest_window.should_be_visible = false
+	 quest_window.window:SetVisible(quest_window.should_be_visible);
       elseif (args.Action == 268435635) then
-	 quest_window.window:SetVisible(not quest_window.window:IsVisible());
+	 quest_window.ui_visible = not quest_window.ui_visible
+	 quest_window.window:SetVisible(quest_window.ui_visible and quest_window.should_be_visible);
       end
    end
 
@@ -221,7 +226,7 @@ function QuestWindow:EnqueueQuest(quest)
     self.questQueue[#self.questQueue + 1] = quest;
     if self.DEBUG then Turbine.Shell.WriteLine("IQR.QuestWindow> Quest " .. quest.name .." added to the queue") end;
     
-    if not self.window:IsVisible() then
+    if not self.should_be_visible then
         self.quest = quest;
         self:ShowQuest();
     end
@@ -246,6 +251,7 @@ function QuestWindow:ShowQuest()
     end
 
 
+    self.should_be_visible = true
     self.window:SetVisible(true);
     self:UpdateWindow();
 end
@@ -348,8 +354,9 @@ function QuestWindow:ShowNextQuestInQueueIfExists()
         Turbine.Shell.WriteLine("IQR.QuestWindow> Next quest in queue : " .. self.quest.name);
         self:ShowQuest(); 
     else
-        self.window:SetVisible(false);
-        self.questQueue = {};
-        self.questQueueIndex = 1;
+       self.should_be_visible = false
+       self.window:SetVisible(false);
+       self.questQueue = {};
+       self.questQueueIndex = 1;
     end
 end
