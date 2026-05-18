@@ -142,6 +142,90 @@ def quests_by_initial(quests: dict) -> dict:
             quests_by_name["OTHER"].append(quest)
     return quests_by_name
 
+
+def organize_quests(quests: dict) -> dict:
+    """
+    Returns quests in the following format
+    {
+        "quests": [{
+            "id": "Zudramdân: Enemy Stores",
+            "name": "Quest name",
+            "raw_name": "Quest rawName",
+            "level": 130,
+            "npc_name": "NPC name",
+            "start_text": "Quest text of accepted quest",
+            "end_text": "Quest text of completed quest",
+            "reapetable": False,
+            "rewards": {
+                "money": {
+                    "gold": 0,
+                    "silver": 0,
+                    "copper": 0,
+                },
+                "reputationItem": {
+                    "factionId": "1879407816",
+                    "faction": "March on Gundabad",
+                    "amount": 700,
+                },
+                "XP": {
+                    "quantity": 259000,
+                },
+                "itemXP": {
+                    "quantity": 259000,
+                },
+                "mountXP": {
+                    "quantity": 217000,
+                },
+                "object": {
+                    "id": "1879407802",
+                    "name": "Copper Coin of Gundabad",
+                    "quantity": 3,
+                },
+            },
+        }]
+    }
+    """
+    oganized_quests = []
+    for quest in quests["quest"]:
+        organize_quests.append({
+            "id": quest["id"],
+            "name": quest["name"],
+            "raw_name": quest["rawName"],
+            "level": int(quest["level"]),
+            "npc_name": quest["rawName"]["npcName"],
+            "start_text": "Quest text of accepted quest",
+            "end_text": "Quest text of completed quest",
+            "reapetable": False,
+            "rewards": {
+                "money": {
+                    "gold": 0,
+                    "silver": 0,
+                    "copper": 0,
+                },
+                "reputationItem": {
+                    "factionId": "1879407816",
+                    "faction": "March on Gundabad",
+                    "amount": 700,
+                },
+                "XP": {
+                    "quantity": 259000,
+                },
+                "itemXP": {
+                    "quantity": 259000,
+                },
+                "mountXP": {
+                    "quantity": 217000,
+                },
+                "object": {
+                    "id": "1879407802",
+                    "name": "Copper Coin of Gundabad",
+                    "quantity": 3,
+                },
+            },
+        })
+    return { "quest": organize_quests }
+
+
 if __name__ == "__main__":
     # TODO reorganize quests fields
     parser = argparse.ArgumentParser(description="generate the quest databases Lua tables")
@@ -171,3 +255,5 @@ if __name__ == "__main__":
         with open(f'QuestDatabases/QuestDatabase_{letter}.lua', 'w', encoding="utf-8") as file:
             file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests() return QUESTS_{letter}; end;")
     logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")
+
+    test = organize_quests(quests_labeled)
