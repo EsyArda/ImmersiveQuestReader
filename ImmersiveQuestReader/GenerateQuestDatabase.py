@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!../venv/bin/python3
 
 import xml.etree.ElementTree as ET
-import time
 import logging
 import argparse
 import luadata
 import pathlib
+import random
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -167,15 +167,9 @@ def organize_quests(quests: dict) -> dict:
                     "faction": "March on Gundabad",
                     "amount": 700,
                 },
-                "XP": {
-                    "quantity": 259000,
-                },
-                "itemXP": {
-                    "quantity": 259000,
-                },
-                "mountXP": {
-                    "quantity": 217000,
-                },
+                "XP": 10,
+                "itemXP": 10,
+                "mountXP": 10,
                 "object": {
                     "id": "1879407802",
                     "name": "Copper Coin of Gundabad",
@@ -185,45 +179,51 @@ def organize_quests(quests: dict) -> dict:
         }]
     }
     """
-    oganized_quests = []
+    organized_quests = []
     for quest in quests["quest"]:
-        organize_quests.append({
+        organized_quest = {
             "id": quest["id"],
             "name": quest["name"],
             "raw_name": quest["rawName"],
             "level": int(quest["level"]),
-            "npc_name": quest["rawName"]["npcName"],
-            "start_text": "Quest text of accepted quest",
             "end_text": "Quest text of completed quest",
-            "reapetable": False,
+            "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
             "rewards": {
-                "money": {
-                    "gold": 0,
-                    "silver": 0,
-                    "copper": 0,
-                },
                 "reputationItem": {
                     "factionId": "1879407816",
                     "faction": "March on Gundabad",
                     "amount": 700,
-                },
-                "XP": {
-                    "quantity": 259000,
-                },
-                "itemXP": {
-                    "quantity": 259000,
-                },
-                "mountXP": {
-                    "quantity": 217000,
                 },
                 "object": {
                     "id": "1879407802",
                     "name": "Copper Coin of Gundabad",
                     "quantity": 3,
                 },
+                "selectOneOf": {'object': [{'id': '1879051694', 'name': "Paladin's Earring"}, {'id': '1879051695', 'name': "Paladin's Bracelet"}, {'id': '1879051696', 'name': "Paladin's Hat"}, {'id': '1879051697', 'name': "Paladin's Shoulders"}, {'id': '1879051698', 'name': "Paladin's Club"}, {'id': '1879051699', 'name': 'Sturdy Took Dagger'}]},
             },
-        })
-    return { "quest": organize_quests }
+        }
+
+        if type(quest["bestower"]) is list:
+            organized_quest["npc_name"] = quest["bestower"][0]["npcName"],
+            organized_quest["start_text"] = quest["bestower"][0]["text"],
+        else:
+            organized_quest["npc_name"] = quest["bestower"]["npcName"],
+            organized_quest["start_text"] = quest["bestower"]["text"],
+
+        if "money" in quest["rewards"]:
+            organized_quest["money"] = {
+                "gold": int(quest["rewards"]["money"]["gold"]),
+                "silver": int(quest["rewards"]["money"]["silver"]),
+                "copper": int(quest["rewards"]["money"]["copper"]),
+            }
+        for xp_type in ["XP", "itemXP", "mountXP"]:
+            if xp_type in quest["rewards"]:
+                organized_quest[xp_type] = int(quest["rewards"][xp_type]["quantity"]),
+
+        if random.random() < 0.01:
+            organized_quests.append(organized_quest)
+
+    return { "quest": organized_quests }
 
 
 if __name__ == "__main__":
@@ -234,26 +234,20 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
     
-    start = time.time()
     # Load key-value from the labels XML file and convert it to a dictionary
     quests_labels_xml = extract_key_value_pairs('lotro-data/lore/labels/en/quests.xml')
-    logging.info(f"✅ Extracted quests text labels {(time.time() - start):.2f} seconds.")
 
-    start = time.time()
     # Replace key strings with their values in the quests XML file
     quests_labeled_xml = xml_replace_key('lotro-data/lore/quests.xml', quests_labels_xml)
-    logging.info(f"✅ Replaced keys with their values in the english quests XML file in {(time.time() - start):.2f} seconds.")
     
-    start = time.time()
     quests_labeled = xml_to_dictionary(quests_labeled_xml.getroot())
     quests_by_initial = quests_by_initial(quests_labeled)
-    logging.info(f"✅ Grouped quests by first letter of name in {(time.time() - start):.2f} seconds.")
 
     pathlib.Path("QuestDatabases").mkdir(exist_ok=True)
-    start = time.time()
     for letter, quest_list in quests_by_initial.items():
         with open(f'QuestDatabases/QuestDatabase_{letter}.lua', 'w', encoding="utf-8") as file:
             file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests() return QUESTS_{letter}; end;")
-    logging.info(f"✅ Wrote the quest databases Lua tables in {(time.time() - start):.2f} seconds.")
+    logging.info(f"✅ Finished.")
 
-    test = organize_quests(quests_labeled)
+    # organized_quests = organize_quests(quests_labeled)
+    # logging.debug(organized_quests)
