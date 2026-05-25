@@ -184,11 +184,22 @@ def organize_quests(quests: dict) -> dict:
         organized_quest = {
             "id": quest["id"],
             "name": quest["name"],
-            "raw_name": quest["rawName"],
+            "rawName": quest["rawName"],
             "level": int(quest["level"]),
-            "end_text": "Quest text of completed quest",
+            "npcName": None,
+            "startText": None,
+            "endText": "Quest text of completed quest",
             "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
             "rewards": {
+                "XP": 0,
+                "itemXP": 0,
+                "mountXP": 0,
+
+                "money": {
+                    "gold": 0,
+                    "silver": 0,
+                    "copper": 0,
+                },
                 "reputationItem": {
                     "factionId": "1879407816",
                     "faction": "March on Gundabad",
@@ -203,12 +214,16 @@ def organize_quests(quests: dict) -> dict:
             },
         }
 
-        if type(quest["bestower"]) is list:
-            organized_quest["npc_name"] = quest["bestower"][0]["npcName"],
-            organized_quest["start_text"] = quest["bestower"][0]["text"],
-        else:
-            organized_quest["npc_name"] = quest["bestower"]["npcName"],
-            organized_quest["start_text"] = quest["bestower"]["text"],
+        bestower = quest.get("bestower")
+
+        if isinstance(bestower, list):
+            bestower = bestower[0] if bestower else None
+
+        if bestower:
+            organized_quest["startText"] = bestower["text"]
+            if "npcName" in bestower:
+                organized_quest["npcName"] = bestower["npcName"]
+
 
         if "money" in quest["rewards"]:
             organized_quest["money"] = {
