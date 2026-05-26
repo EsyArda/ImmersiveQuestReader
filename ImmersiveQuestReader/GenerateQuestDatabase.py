@@ -185,10 +185,11 @@ def organize_quests(quests: dict) -> dict:
             "id": quest["id"],
             "name": quest["name"],
             "rawName": quest["rawName"],
+            "questArc": quest["questArc"] if "questArc" in quest else None,
             "level": int(quest["level"]),
             "npcName": None,
             "startText": None,
-            "endText": "Quest text of completed quest",
+            "endText": None,
             "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
             "rewards": {
                 "XP": 0,
@@ -200,40 +201,45 @@ def organize_quests(quests: dict) -> dict:
                     "silver": 0,
                     "copper": 0,
                 },
-                "reputationItem": {
-                    "factionId": "1879407816",
-                    "faction": "March on Gundabad",
-                    "amount": 700,
-                },
-                "object": {
-                    "id": "1879407802",
-                    "name": "Copper Coin of Gundabad",
-                    "quantity": 3,
-                },
-                "selectOneOf": {'object': [{'id': '1879051694', 'name': "Paladin's Earring"}, {'id': '1879051695', 'name': "Paladin's Bracelet"}, {'id': '1879051696', 'name': "Paladin's Hat"}, {'id': '1879051697', 'name': "Paladin's Shoulders"}, {'id': '1879051698', 'name': "Paladin's Club"}, {'id': '1879051699', 'name': 'Sturdy Took Dagger'}]},
+                # "reputationItem": {
+                #     "factionId": "1879407816",
+                #     "faction": "March on Gundabad",
+                #     "amount": 700,
+                # },
+                # "object": {
+                #     "id": "1879407802",
+                #     "name": "Copper Coin of Gundabad",
+                #     "quantity": 3,
+                # },
+                # "selectOneOf": {'object': [{'id': '1879051694', 'name': "Paladin's Earring"}, {'id': '1879051695', 'name': "Paladin's Bracelet"}, {'id': '1879051696', 'name': "Paladin's Hat"}, {'id': '1879051697', 'name': "Paladin's Shoulders"}, {'id': '1879051698', 'name': "Paladin's Club"}, {'id': '1879051699', 'name': 'Sturdy Took Dagger'}]},
             },
         }
 
         bestower = quest.get("bestower")
-
         if isinstance(bestower, list):
             bestower = bestower[0] if bestower else None
-
         if bestower:
             organized_quest["startText"] = bestower["text"]
             if "npcName" in bestower:
                 organized_quest["npcName"] = bestower["npcName"]
 
-
+        # Money
         if "money" in quest["rewards"]:
-            organized_quest["money"] = {
+            organized_quest["rewards"]["money"] = {
                 "gold": int(quest["rewards"]["money"]["gold"]),
                 "silver": int(quest["rewards"]["money"]["silver"]),
                 "copper": int(quest["rewards"]["money"]["copper"]),
             }
+
+        # XP
         for xp_type in ["XP", "itemXP", "mountXP"]:
             if xp_type in quest["rewards"]:
-                organized_quest[xp_type] = int(quest["rewards"][xp_type]["quantity"]),
+                organized_quest[xp_type] = int(quest["rewards"][xp_type]["quantity"])
+
+        # Completed quest text
+        objective = quest["objectives"]["objective"]
+        organized_quest["endText"] = objective["dialog"]["text"]
+
 
         if random.random() < 0.01:
             organized_quests.append(organized_quest)
