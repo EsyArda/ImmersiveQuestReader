@@ -190,6 +190,7 @@ def organize_quests_fields(quests: dict) -> dict:
             "startText": None,
             "endText": None,
             "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
+            "instanced": False,
             "rewards": {
                 "XP": 0,
                 "itemXP": 0,
@@ -233,14 +234,26 @@ def organize_quests_fields(quests: dict) -> dict:
         # XP
         for xp_type in ["XP", "itemXP", "mountXP"]:
             if xp_type in quest["rewards"]:
-                organized_quest[xp_type] = int(quest["rewards"][xp_type]["quantity"])
+                organized_quest["rewards"][xp_type] = int(quest["rewards"][xp_type]["quantity"])
+
+        # Instanced
+        if "instanced" in quest:
+            organized_quest["instanced"] = True if quest["instanced"] == "true" else False
 
         # Completed quest text
         objective = quest["objectives"]["objective"]
-        organized_quest["endText"] = objective["dialog"]["text"]
+        if isinstance(objective, list) and "dialog" in objective:
+            dialog = objective[-1]["dialog"]
+        elif "dialog" in objective:
+            dialog = objective["dialog"]
+        else:
+            dialog = None
+            logging.debug(f"Dialog is None for quest: { quest }")
 
+        if dialog:
+            organized_quest["endText"] = dialog[-1]["text"] if isinstance(dialog, list) else dialog["text"]  # TODO ou alors ["dialog"][0]["text"] ??
 
-        if random.random() < 0.01:
+        if random.random() < 0.001:
             organized_quests.append(organized_quest)
 
     return { "quest": organized_quests }
