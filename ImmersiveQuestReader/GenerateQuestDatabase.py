@@ -142,8 +142,7 @@ def quests_by_initial(quests: dict) -> dict:
             quests_by_name["OTHER"].append(quest)
     return quests_by_name
 
-
-def organize_quests(quests: dict) -> dict:
+def organize_quests_fields(quests: dict) -> dict:
     """
     Returns quests in the following format
     {
@@ -270,5 +269,5 @@ if __name__ == "__main__":
             file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests() return QUESTS_{letter}; end;")
     logging.info(f"✅ Finished.")
 
-    # organized_quests = organize_quests(quests_labeled)
-    # logging.debug(organized_quests)
+    ##### Tests #####
+    quests_organized = organize_quests_fields(quests_labeled)
