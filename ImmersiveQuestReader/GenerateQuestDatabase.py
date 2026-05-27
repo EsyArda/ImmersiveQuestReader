@@ -181,6 +181,7 @@ def organize_quests_fields(quests: dict) -> dict:
     organized_quests = []
     for quest in quests["quest"]:
         organized_quest = {
+            "zquest": quest, # TODO remove
             "id": quest["id"],
             "name": quest["name"],
             "rawName": quest["rawName"],
@@ -242,16 +243,17 @@ def organize_quests_fields(quests: dict) -> dict:
 
         # Completed quest text
         objective = quest["objectives"]["objective"]
-        if isinstance(objective, list) and "dialog" in objective:
-            dialog = objective[-1]["dialog"]
+        dialog = None
+        if isinstance(objective, list):
+            if "dialog" in objective[-1]:
+                dialog = objective[-1]["dialog"]
         elif "dialog" in objective:
             dialog = objective["dialog"]
-        else:
-            dialog = None
-            logging.debug(f"Dialog is None for quest: { quest }")
-
         if dialog:
             organized_quest["endText"] = dialog[-1]["text"] if isinstance(dialog, list) else dialog["text"]  # TODO ou alors ["dialog"][0]["text"] ??
+        else:
+            logging.debug(f"Could not get endText for quest: { quest }")
+            breakpoint()
 
         if random.random() < 0.001:
             organized_quests.append(organized_quest)
