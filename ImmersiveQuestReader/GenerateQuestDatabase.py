@@ -5,7 +5,7 @@ import logging
 import argparse
 import luadata
 import pathlib
-import random
+# import random
 
 # Function to extract key-value pairs from the labels xml
 def extract_key_value_pairs(xml_file):
@@ -147,41 +147,6 @@ def organize_quests_fields(quests: dict) -> dict:
     Returns quests in the following format
     {
         "quests": [{
-            "id": "Zudramdân: Enemy Stores",
-            "name": "Quest name",
-            "raw_name": "Quest rawName",
-            "level": 130,
-            "npc_name": "NPC name",
-            "start_text": "Quest text of accepted quest",
-            "end_text": "Quest text of completed quest",
-            "reapetable": False,
-            "rewards": {
-                "money": {
-                    "gold": 0,
-                    "silver": 0,
-                    "copper": 0,
-                },
-                "reputationItem": {
-                    "factionId": "1879407816",
-                    "faction": "March on Gundabad",
-                    "amount": 700,
-                },
-                "XP": 10,
-                "itemXP": 10,
-                "mountXP": 10,
-                "object": {
-                    "id": "1879407802",
-                    "name": "Copper Coin of Gundabad",
-                    "quantity": 3,
-                },
-            },
-        }]
-    }
-    """
-    organized_quests = []
-    for quest in quests["quest"]:
-        organized_quest = {
-            "zquest": quest, # TODO remove
             "id": quest["id"],
             "name": quest["name"],
             "rawName": quest["rawName"],
@@ -191,6 +156,36 @@ def organize_quests_fields(quests: dict) -> dict:
             "startText": None,
             "endText": None,
             "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
+            "autoBestowed": bool(quest["autoBestowed"]) if "autoBestowed" in quest else False,
+            "instanced": False,
+            "rewards": {
+                "XP": 0,
+                "itemXP": 0,
+                "mountXP": 0,
+
+                "money": {
+                    "gold": 0,
+                    "silver": 0,
+                    "copper": 0,
+                },
+            },
+        }]
+    }
+    """
+    organized_quests = []
+    for quest in quests["quest"]:
+        organized_quest = {
+            # "zquest": quest,
+            "id": quest["id"],
+            "name": quest["name"],
+            "rawName": quest["rawName"],
+            "questArc": quest["questArc"] if "questArc" in quest else None,
+            "level": int(quest["level"]),
+            "npcName": None,
+            "startText": None,
+            "endText": None,
+            "repeatable": bool(quest["repeatable"]) if "repeatable" in quest else False,
+            "autoBestowed": bool(quest["autoBestowed"]) if "autoBestowed" in quest else False,
             "instanced": False,
             "rewards": {
                 "XP": 0,
@@ -252,11 +247,11 @@ def organize_quests_fields(quests: dict) -> dict:
         if dialog:
             organized_quest["endText"] = dialog[-1]["text"] if isinstance(dialog, list) else dialog["text"]  # TODO ou alors ["dialog"][0]["text"] ??
         else:
-            logging.debug(f"Could not get endText for quest: { quest }")
-            breakpoint()
+            if not organized_quest["instanced"] and not organized_quest["autoBestowed"]:
+                logging.debug(f"Could not get endText for non instanced nor auto bestowed quest: { quest }")
 
-        if random.random() < 0.001:
-            organized_quests.append(organized_quest)
+        # if random.random() < 0.01:
+        #     organized_quests.append(organized_quest)
 
     return { "quest": organized_quests }
 
@@ -276,13 +271,13 @@ if __name__ == "__main__":
     quests_labeled_xml = xml_replace_key('lotro-data/lore/quests.xml', quests_labels_xml)
     
     quests_labeled = xml_to_dictionary(quests_labeled_xml.getroot())
-    quests_by_initial = quests_by_initial(quests_labeled)
+    quests_organized = organize_quests_fields(quests_labeled)
+
+    quests_by_initial = quests_by_initial(quests_organized)
+    # quests_by_initial = quests_by_initial(quests_labeled)
 
     pathlib.Path("QuestDatabases").mkdir(exist_ok=True)
     for letter, quest_list in quests_by_initial.items():
         with open(f'QuestDatabases/QuestDatabase_{letter}.lua', 'w', encoding="utf-8") as file:
             file.write(f"QUESTS_{letter} = { luadata.serialize(quest_list, indent=' ') }\nfunction GetDatabaseQuests() return QUESTS_{letter}; end;")
     logging.info(f"✅ Finished.")
-
-    ##### Tests #####
-    quests_organized = organize_quests_fields(quests_labeled)
