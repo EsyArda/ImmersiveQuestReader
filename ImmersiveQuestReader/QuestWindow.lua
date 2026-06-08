@@ -278,8 +278,8 @@ end
 
 function QuestWindow:UpdateFooterText()
     self.pageNumber:SetText(self.quest.name .. " - " .. self.currentPage .. "/" .. #self.questPages);
-    if self.quest.bestower and self.quest.bestower.npcName then
-        self.npcLabel:SetText("From " .. self.quest.bestower.npcName);
+    if self.quest.npcName then
+        self.npcLabel:SetText("From " .. self.quest.npcName);
     else
         self.npcLabel:SetText("");
     end
@@ -311,7 +311,6 @@ function QuestWindow:UpdateInfo()
         -- if self.debug then Turbine.Shell.WriteLine("IQR.QuestWindow> Item Choice Rewards") end;
        self:AddItemsToControl(self.quest.rewards.selectOneOf.object, self.itemChoiceControl) 
     end;
-    
 end
 
 function QuestWindow:UpdateWindow()

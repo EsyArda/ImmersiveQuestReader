@@ -67,10 +67,7 @@ function QuestManager:AddQuestStateText(quest, state)
       quest._state = nil
    end
 
-   local questText = self:GetQuestTextFromState(quest, state)
-   if questText then
-      quest._text = questText;
-   end
+   quest._text = self:GetQuestTextFromState(quest, state)
 
    return quest;
 end
@@ -80,33 +77,11 @@ function QuestManager:GetQuestTextFromState(quest, state)
    if self.DEBUG then LogMessage("IQR.QuestManager> Showing " .. state .. " quest " .. quest.name .. " (" .. state .. ")") end;
 
    if state ~= nil and state == "completed" then
-      local objective = quest.objectives.objective;
-      if objective.dialog then
-	 if objective.dialog.text then
-	    questText = objective.dialog.text;
-	 else
-	    questText = objective.dialog[#objective.dialog].text
-	 end
-      elseif objective[#objective].dialog.text then
-	 questText = objective[#objective].dialog.text;
-      elseif objective[#objective].dialog[#objective[#objective].dialog] then
-	 questText = objective[#objective].dialog[#objective[#objective].dialog].text;
-      else
-	 questText = "Could not retrieve quest text";
-	 if self.DEBUG then LogMessage("IQR.QuestWindow> Can't find quest text") end;
-      end
-
+      return quest.endText
    elseif state ~= nil and state == "new" then
-      if quest.bestower.text ~= nil and type(quest.bestower.text) == "string" then
-	 questText = quest.bestower.text;
-      else
-	 questText = quest.bestower[1].text;
-      end
+      return quest.startText
    else
       if self.DEBUG then LogMessage("IQR.QuestWindow> Quest state is " .. state) end;
-      questText = "Could not retrieve quest text";
+      return nil
    end
-
-   if self.DEBUG then LogMessage("IQR.QuestManager> Quest text: " .. questText) end
-   return questText;
 end
